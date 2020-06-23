@@ -2,7 +2,17 @@ from calim import *
 import pandas as pd
 import pickle
 import numpy as np
+import tkinter as tk
+from tkinter.filedialog import askopenfilename, asksaveasfilename
 
+root = tk.Tk()
+root.tk.call('tk', 'scaling', 2.0)
+
+hdf_filename = askopenfilename(filetypes=(("HDF File", "*.hdf"), ("All Files", "*.*")),
+                                         title="Choose a file.")
+
+pkl_filename = asksaveasfilename(filetypes=(("Python Pickle", "*.pkl"), ("All Files", "*.*")),
+                                         title="Choose a file.")
 
 hdf = pd.HDFStore("test.hdf")
 
@@ -57,4 +67,4 @@ for rec in pkl.recordings:
     for cond in pkl.recordings[rec].conditions:
         print(cond)
 
-pickle.dump(pkl, open("save.pkl", "wb" ) )
+pickle.dump(pkl, open("save.pkl", "wb"))
