@@ -11,6 +11,7 @@ from AddEvents import AddEvents
 from RecordingInfoDialog import RecordingInfoDialog
 from ConditionsDialog import ConditionsDialog
 from PDFOverview import CreatePDF
+from SubtractBaselineDialog import SubtractBaselineDialog
 
 
 class Controller:
@@ -202,6 +203,15 @@ class Controller:
         self.event_view_rebuild()
         self.selected_events = None
 
+    def subtract_baseline(self):
+        if not self.pickle:
+            return
+
+        d = SubtractBaselineDialog(parent=self.root)
+        print(d.lam, d.p, d.iter)
+        self.selected_cell.subtract_baseline(d.lam, d.p, d.iter)
+        print(self.selected_cell.baseline)
+
     def delete_event_list(self):
         # Search for events by thresholding of the approximated first derivative of the raw trace
         # Only run if a pickle has been loaded or created
@@ -284,6 +294,12 @@ class Controller:
         self.view.graph_frame.raw_ax.clear()
         self.view.graph_frame.raw_ax.plot(range(0, len(self.selected_cell.raw_data)), self.selected_cell.raw_data)
 
+        # Todo: Add a way to switch between not showing baseline, showing baseline and showing data with baseline subtracted
+        try:
+            if len(self.selected_cell.baseline) > 0:
+                self.view.graph_frame.raw_ax.plot(range(0, len(self.selected_cell.raw_data)), self.selected_cell.baseline)
+        except AttributeError:
+            self.selected_cell.baseline = []
         self.view.graph_frame.di_ax.clear()
 
         self.view.graph_frame.di_ax.plot(range(1, len(self.selected_cell.raw_data)), self.selected_cell.get_di())

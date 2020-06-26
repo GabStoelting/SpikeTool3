@@ -25,6 +25,7 @@ class MainMenu(tk.Menu):
         self.filemenu.add_command(label="Quit", command=parent.quit)
 
         self.eventmenu.add_command(label="Find Events by Threshold", command=parent.find_events)
+        self.eventmenu.add_command(label="Subtract Baseline", command=parent.subtract_baseline)
         self.eventmenu.add_command(label="Add Event List", command=parent.add_event_list)
         self.eventmenu.add_separator()
         self.eventmenu.add_command(label="Delete Event(s)", command=parent.delete_event_list)
@@ -38,6 +39,7 @@ class MainMenu(tk.Menu):
         self.filemenu.entryconfig("Add .csv File", state=state)
         self.filemenu.entryconfig("Create .pdf Overview", state=state)
         self.filemenu.entryconfig("Save as Pickle...", state=state)
+        self.eventmenu.entryconfig("Subtract Baseline", state=state)
         self.eventmenu.entryconfig("Find Events by Threshold", state=state)
         self.eventmenu.entryconfig("Add Event List", state=state)
         self.eventmenu.entryconfig("Delete Event(s)", state=state)

@@ -1,4 +1,7 @@
 import numpy as np
+from scipy.signal import find_peaks
+from scipy import sparse
+from scipy.sparse.linalg import spsolve
 
 #####################################################################
 #
@@ -56,6 +59,11 @@ class Cell:
     def __init__(self, cell_id, raw_data, **kwargs):
         self.cell_id = cell_id
         self.raw_data = raw_data
+        self.baseline_lam = 10e7
+        self.baseline_p = 0.001
+        self.baseline_iter = 10
+        self.baseline = []
+
         self.events = []
         self.conditions = []
         self.use = True
@@ -172,6 +180,19 @@ class Cell:
 
     def get_di(self):
         return np.diff(self.raw_data)
+
+    def subtract_baseline(self, lam, p, niter=10):
+
+        L = len(self.raw_data)
+        D = sparse.diags([1, -2, 1], [0, -1, -2], shape=(L, L - 2))
+        w = np.ones(L)
+        for i in range(niter):
+            W = sparse.spdiags(w, 0, L, L)
+            Z = W + lam * D.dot(D.transpose())
+            z = spsolve(Z, w * self.raw_data)
+            w = p * (self.raw_data > z) + (1 - p) * (self.raw_data < z)
+
+        self.baseline = z
 
 #####################################################################
 #
