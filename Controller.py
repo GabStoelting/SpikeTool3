@@ -199,8 +199,9 @@ class Controller:
         self.selected_cell.add_events(events)
 
         self.event_list_rebuild()
-        self.view_rebuild()
-        self.event_view_rebuild()
+        #self.view_rebuild(retain_zoom=True)
+        #self.event_view_rebuild()
+        self.view_refresh()
         self.selected_events = None
 
     def subtract_baseline(self):
@@ -234,8 +235,9 @@ class Controller:
 
         # Redraw all necessary views
         self.event_list_rebuild()
-        self.view_rebuild()
-        self.event_view_rebuild()
+        #self.view_rebuild(retain_zoom=True)
+        #self.event_view_rebuild()
+        self.view_refresh()
         self.selected_events = None
 
     def tree_clicked(self, event):
@@ -263,7 +265,7 @@ class Controller:
         # This should only be run if a cell was selected!
         self.event_list_rebuild()
         self.view_rebuild()
-        self.event_view_rebuild()
+        self.view_refresh()
 
     def tree_context_clicked(self, event):
         self.view.navigation_frame.menu.post(event.x_root, event.y_root)
@@ -289,8 +291,11 @@ class Controller:
         # Show the context menu in the event list when clicked
         self.view.event_frame.menu.post(event.x_root, event.y_root)
 
-    def view_rebuild(self):
+    def view_rebuild(self, retain_zoom=False):
         # This clears the graphs and plots the data again
+        current_xlim = self.view.graph_frame.raw_ax.get_xlim()
+        current_ylim = self.view.graph_frame.raw_ax.get_ylim()
+
         self.view.graph_frame.raw_ax.clear()
         self.view.graph_frame.raw_ax.plot(range(0, len(self.selected_cell.raw_data)), self.selected_cell.raw_data)
 
@@ -303,9 +308,22 @@ class Controller:
         self.view.graph_frame.di_ax.clear()
 
         self.view.graph_frame.di_ax.plot(range(1, len(self.selected_cell.raw_data)), self.selected_cell.get_di())
+
+        # Set the old zoom again if desired
+        if retain_zoom:
+            self.view.graph_frame.raw_ax.set_xlim(current_xlim)
+            self.view.graph_frame.raw_ax.set_ylim(current_ylim)
+
+        # draw all changes
         self.view.graph_frame.canvas.draw()
 
-    def event_view_rebuild(self):
+    def view_refresh(self):
+        # Call this function if everything on top of the raw trace should be refreshed
+        self.view_event_refresh()
+        self.view_condition_refresh()
+        self.view.graph_frame.canvas.draw()
+
+    def view_event_refresh(self):
 
         # This function replots all events
         if self.selected_recording and self.selected_cell:
@@ -315,30 +333,16 @@ class Controller:
                 if self.event_lines_raw:
                     for line in self.event_lines_raw:
                         line.remove()
-                if self.condition_lines_raw:
-                    for line in self.condition_lines_raw:
-                        line.remove()
-                if self.condition_text_raw:
-                    for text in self.condition_text_raw:
-                        text.remove()
 
                 # Remove all old lines from the di graph
                 if self.event_lines_di:
                     for line in self.event_lines_di:
                         line.remove()
-                if self.condition_lines_di:
-                    for line in self.condition_lines_di:
-                        line.remove()
-                if self.condition_text_di:
-                    for text in self.condition_text_di:
-                        text.remove()
+
 
                 self.event_lines_raw = []
                 self.event_lines_di = []
-                self.condition_lines_raw = []
-                self.condition_lines_di = []
-                self.condition_text_raw = []
-                self.condition_text_di = []
+
 
                 if self.view.graph_frame.toolbar.show_events.get():
                     for i, event in enumerate(self.selected_cell.events):
@@ -353,25 +357,43 @@ class Controller:
                             self.event_lines_di.append(
                                 self.view.graph_frame.di_ax.axvline(int(event.frame), lw=0.2, color="gray"))
 
+    def view_condition_refresh(self):
+        # This function refreshes the displayed information about conditions
 
+        # remove condition information from raw graph
+        if self.condition_lines_raw:
+            for line in self.condition_lines_raw:
+                line.remove()
+        if self.condition_text_raw:
+            for text in self.condition_text_raw:
+                text.remove()
+        # remove condition information from di graph
+        if self.condition_lines_di:
+            for line in self.condition_lines_di:
+                line.remove()
+        if self.condition_text_di:
+            for text in self.condition_text_di:
+                text.remove()
 
-                # Show condition boundaries if the checkbox is set
-                if self.view.graph_frame.toolbar.show_conditions.get():
-                    for condition in self.pickle.recordings[self.selected_recording].conditions:
-                        self.condition_lines_raw.append(
-                        self.view.graph_frame.raw_ax.axvline(int(condition.end), lw=1.0, color="red"))
-                        self.condition_lines_di.append(
-                        self.view.graph_frame.di_ax.axvline(int(condition.end), lw=1.0, color="red"))
-                        condition_info = f"Start: {condition.start}\nEnd: {condition.end}\n"
+        self.condition_lines_raw = []
+        self.condition_lines_di = []
+        self.condition_text_raw = []
+        self.condition_text_di = []
+        # Show condition boundaries if the checkbox is set
+        if self.view.graph_frame.toolbar.show_conditions.get():
+            for condition in self.pickle.recordings[self.selected_recording].conditions:
+                self.condition_lines_raw.append(
+                self.view.graph_frame.raw_ax.axvline(int(condition.end), lw=1.0, color="red"))
+                self.condition_lines_di.append(
+                self.view.graph_frame.di_ax.axvline(int(condition.end), lw=1.0, color="red"))
+                condition_info = f"Start: {condition.start}\nEnd: {condition.end}\n"
 
-                        for ci in condition.information:
-                            condition_info = condition_info+f"{ci}: {condition.information[ci]}\n"
-                        self.condition_text_raw.append(
-                            self.view.graph_frame.raw_ax.text(int(condition.start), self.view.graph_frame.raw_ax.get_ylim()[0], condition_info, fontsize=8))
+                for ci in condition.information:
+                    condition_info = condition_info+f"{ci}: {condition.information[ci]}\n"
+                self.condition_text_raw.append(
+                    self.view.graph_frame.raw_ax.text(int(condition.start), self.view.graph_frame.raw_ax.get_ylim()[0], condition_info, fontsize=8))
 
-            self.view.graph_frame.canvas.draw()
-
-    def event_view_update(self, event_i, color, lw=0.2):
+    def view_event_update(self, event_i, color, lw=0.2):
         # This function only changes a subset of the events
         [self.event_lines_raw[i].set_color(color) for i in event_i]
         [self.event_lines_raw[i].set_linewidth(lw) for i in event_i]
@@ -381,18 +403,21 @@ class Controller:
 
         self.view.graph_frame.canvas.draw()
 
-    def event_view_reset(self, event_i):
+    def view_event_reset(self, event_i):
         for i in event_i:
             event = self.selected_cell.events[i]
             if event.use:
                 self.event_lines_raw[i].set_color("green")
                 self.event_lines_di[i].set_color("green")
+                self.event_lines_raw[i].set_linewidth(0.5)
+                self.event_lines_di[i].set_linewidth(0.5)
             else:
                 self.event_lines_raw[i].set_color("gray")
                 self.event_lines_di[i].set_color("gray")
+                self.event_lines_raw[i].set_linewidth(0.2)
+                self.event_lines_di[i].set_linewidth(0.2)
 
-            self.event_lines_raw[i].set_linewidth(0.2)
-            self.event_lines_di[i].set_linewidth(0.2)
+
 
     def event_list_rebuild(self):
         self.view.event_frame.event_listbox.delete(0, "end")
@@ -409,14 +434,14 @@ class Controller:
 
         # First reset the old events to their colors
         if self.selected_events is not None:
-            self.event_view_reset(self.selected_events)
+            self.view_event_reset(self.selected_events)
 
         # Read the selected events from the listbox
         self.selected_events = ([i for i in self.view.event_frame.event_listbox.curselection()])
 
         # Change the color of the selected events to red
         if self.selected_events is not None:
-            self.event_view_update(self.selected_events, "red", lw=1.0)
+            self.view_event_update(self.selected_events, "red", lw=1.0)
 
     def add_event_list(self):
         d = AddEvents(self.root)
@@ -424,7 +449,7 @@ class Controller:
         self.selected_cell.add_events(d.events)
         self.event_list_rebuild()
 
-        self.event_view_rebuild()
+        self.view_refresh()
 
     def add_event_single(self):
         if self.select_from == self.select_to:
@@ -432,7 +457,7 @@ class Controller:
             self.selected_cell.add_events(self.select_from)
 
             self.event_list_rebuild()
-            self.event_view_rebuild()
+            self.view_refresh()
 
     def inactivate_event(self):
         if self.selected_events is not None:
@@ -440,7 +465,7 @@ class Controller:
                                 for i in self.selected_events])
             self.selected_cell.reject_event(selected_frames)
             self.event_list_rebuild()
-            self.event_view_update(self.selected_events, "gray")
+            self.view_event_update(self.selected_events, "gray")
 
         else:
             tk.messagebox.showerror("No cell selected.", "You need to select a cell first!")
@@ -462,7 +487,7 @@ class Controller:
                                 for i in self.selected_events])
             self.selected_cell.activate_event(selected_frames)
             self.event_list_rebuild()
-            self.event_view_update(self.selected_events, "green", lw=0.5)
+            self.view_event_update(self.selected_events, "green", lw=0.5)
         else:
             tk.messagebox.showerror("No cell selected.", "You need to select a cell first!")
             return
@@ -519,7 +544,7 @@ class Controller:
 
         # First reset the old events to their colors
         if self.selected_events is not None:
-            self.event_view_reset(self.selected_events)
+            self.view_event_reset(self.selected_events)
 
         if self.selected_cell.has_events():
             # Read the selected events from the graph selection
@@ -532,11 +557,12 @@ class Controller:
             # Set the current selection to the ones chosen in the graph
             self.view.event_frame.event_listbox.selection_set(self.selected_events[0], self.selected_events[-1])
             # Change the color of the selected events to red
-            self.event_view_update(self.selected_events, "red", lw=1.0)
+            self.view_event_update(self.selected_events, "red", lw=1.0)
 
     def graph_set_from_to(self, value1, value2):
         # TODO: Remove that TypeError!
         # Handle setting of the "from" and "to" fields and the boundary line markers
+        print(value1, value2)
         if value2 == None:
             from_value = value1
             to_value = None

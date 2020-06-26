@@ -8,7 +8,7 @@ version = "20200515-GS"
 
 app = Controller()
 
-scale = True # Set this to true if you want to scale all 
+scale = False # Set this to true if you want to scale the fonts
 
 if scale:
     default_font = font.nametofont("TkDefaultFont")

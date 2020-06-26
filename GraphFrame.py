@@ -113,7 +113,7 @@ class GraphFrame(ttk.Frame):
             self.raw_ax.get_shared_x_axes().remove(self.di_ax)
 
     def show_conditions(self, show_conditions=True):
-        self.controller.event_view_rebuild()
+        self.controller.view_refresh()
 
     def show_events(self, show_events=True):
-        self.controller.event_view_rebuild()
+        self.controller.view_refresh()
