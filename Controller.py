@@ -115,9 +115,10 @@ class Controller:
         else:
             d = RecordingInfoDialog(self.root, dt=self.pickle.recordings[self.selected_recording].dt,
                                     **self.pickle.recordings[self.selected_recording].information)
-
-        self.pickle.recordings[self.selected_recording].information = d.information
-        self.pickle.recordings[self.selected_recording].dt = d.dt
+        # Only update if the information was validated!
+        if d.successful:
+            self.pickle.recordings[self.selected_recording].information = d.information
+            self.pickle.recordings[self.selected_recording].dt = d.dt
 
     def show_conditions_dialog(self):
         # This opens the recording information table

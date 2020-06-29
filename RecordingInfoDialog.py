@@ -9,6 +9,7 @@ class RecordingInfoDialog(tkSimpleDialog.Dialog):
     def __init__(self, parent, dt=0.0, **kwargs):
         self.information = None
         self.dt = None
+        self.successful = False
 
         self.table = {"dt": {"name": "dt", "value": dt}}
         if kwargs:
@@ -34,7 +35,6 @@ class RecordingInfoDialog(tkSimpleDialog.Dialog):
         return self.information_table  # initial focus
 
     def validate(self):
-
         # Update self.information with the current data from the table
 
         self.information = {self.information_table.getModel().data[key]["name"]:
@@ -59,9 +59,14 @@ class RecordingInfoDialog(tkSimpleDialog.Dialog):
             self.dt = None
             return False
 
+        self.successful = True # This dialog was successful, even after validation!
         return True
 
-    def apply(self):
-        # print("RecordingInfoDialog.apply() - begin")
-        print(self.information)
-        # print("RecordingInfoDialog.apply() - end")
+#    def apply(self):
+#        print(self.information)
+
+    def cancel(self):
+        self.parent.focus_set()
+        self.destroy()
+        return False
+
