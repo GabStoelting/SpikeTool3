@@ -6,17 +6,19 @@ class EventFrame(ttk.Frame):
         # This is the frame for the event list
         super().__init__()
 
-        eventview_frame = ttk.Frame(master=self)
-        eventview_frame.grid(row=1, column=0, sticky="nswe")
+        self.rowconfigure(0, weight=0)
+        self.rowconfigure(1, weight=100)
+        self.columnconfigure(0, weight=100)
+        self.columnconfigure(1, weight=0)
 
-        label = tk.Label(master=eventview_frame, text="Events:")
-        label.pack(side="top", fill=tk.BOTH, expand=True)
+        label = tk.Label(master=self, text="Events:")
+        label.grid(row=0, column=0, sticky="nwe", columnspan=2)
 
-        self.event_listbox = tk.Listbox(master=eventview_frame, selectmode="extended", width=15, height=35)
-        self.event_listbox.pack(side="left", fill=tk.BOTH, expand=True)
+        self.event_listbox = tk.Listbox(master=self, selectmode="extended", width=15, height=35)
+        self.event_listbox.grid(row=1, column=0, sticky="nswe")
 
-        event_scrollbar = tk.Scrollbar(master=eventview_frame)
-        event_scrollbar.pack(side="right", fill=tk.BOTH, expand=True)
+        event_scrollbar = tk.Scrollbar(master=self)
+        event_scrollbar.grid(row=1, column=1, sticky="nswe")
         self.event_listbox.config(yscrollcommand=event_scrollbar.set)
         event_scrollbar.config(command=self.event_listbox.yview)
 

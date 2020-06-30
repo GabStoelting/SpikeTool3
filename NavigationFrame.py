@@ -14,21 +14,24 @@ class NavigationFrame(ttk.Frame):
                   foreground=self.fixed_map("foreground"),
                   background=self.fixed_map("background"))
 
-        treeview_frame = ttk.Frame(master=self)
-        treeview_frame.grid(row=1, column=0, sticky="nswe")
+        self.rowconfigure(0, weight=0)
+        self.rowconfigure(1, weight=100)
+        self.columnconfigure(0, weight=100)
+        self.columnconfigure(1, weight=0)
 
-        label = tk.Label(master=treeview_frame, text="Recordings:")
-        label.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        label = tk.Label(master=self, text="Recordings:")
+        label.grid(row=0, column=0, sticky="nwe", columnspan=2)
 
-        self.tree = ttk.Treeview(master=treeview_frame, height=25)
+        self.tree = ttk.Treeview(master=self, height=25)
         self.tree.tag_configure('recording', foreground="black")
         self.tree.tag_configure('active_cell', foreground="black")
         self.tree.tag_configure('active_cell_has_events', foreground="green")
         self.tree.tag_configure('inactive_cell', foreground="gray")
-        self.tree.pack(side="left", fill=tk.BOTH, expand=True)
+        self.tree.grid(row=1, column=0, sticky="nswe")
 
-        tree_scrollbar = tk.Scrollbar(master=treeview_frame)
-        tree_scrollbar.pack(side="right", fill=tk.BOTH, expand=True)
+
+        tree_scrollbar = tk.Scrollbar(master=self)
+        tree_scrollbar.grid(row=1, column=1, sticky="nswe")
 
         self.tree.config(yscrollcommand=tree_scrollbar.set)
         tree_scrollbar.config(command=self.tree.yview)
