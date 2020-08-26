@@ -23,7 +23,6 @@ class MyToolbar(NavigationToolbar2Tk):
         c = tk.Checkbutton(self, text="Synchronize", variable=self.synchronize, command=self.change_synchronization)
         c.pack(side="left")
 
-
         self.show_conditions = tk.IntVar()
 
         c = tk.Checkbutton(self, text="Show conditions", variable=self.show_conditions,
@@ -35,7 +34,6 @@ class MyToolbar(NavigationToolbar2Tk):
         c = tk.Checkbutton(self, text="Show events", variable=self.show_events,
                            command=self.change_show_events)
         c.pack(side="left")
-
 
         self.select = False
         self.select_button = tk.Button(self, text="Select", command=self.change_select)
@@ -67,6 +65,7 @@ class MyToolbar(NavigationToolbar2Tk):
             self.parent.show_events(True)
         else:
             self.parent.show_events(False)
+
     def change_select(self):
         if self.select:
             self.select = False
@@ -112,8 +111,8 @@ class GraphFrame(ttk.Frame):
         else:
             self.raw_ax.get_shared_x_axes().remove(self.di_ax)
 
-    def show_conditions(self, show_conditions=True):
+    def show_conditions(self):
         self.controller.view_refresh()
 
-    def show_events(self, show_events=True):
+    def show_events(self):
         self.controller.view_refresh()
