@@ -56,9 +56,9 @@ class MyToolbar(NavigationToolbar2Tk):
     def change_show_conditions(self):
         # This function turns the display of the conditions on or off
         if self.show_conditions.get():
-            self.parent.show_conditions(True)
+            self.parent.show_conditions()
         else:
-            self.parent.show_conditions(False)
+            self.parent.show_conditions()
 
     def change_show_events(self):
         if self.show_events.get():

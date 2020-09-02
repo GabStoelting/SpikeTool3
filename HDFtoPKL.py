@@ -14,7 +14,8 @@ hdf_filename = askopenfilename(filetypes=(("HDF File", "*.hdf"), ("All Files", "
 pkl_filename = asksaveasfilename(filetypes=(("Python Pickle", "*.pkl"), ("All Files", "*.*")),
                                          title="Choose a file.")
 
-hdf = pd.HDFStore("test.hdf")
+hdf = pd.HDFStore(hdf_filename)
+print(hdf.keys())
 
 pkl = Project()
 
@@ -67,4 +68,5 @@ for rec in pkl.recordings:
     for cond in pkl.recordings[rec].conditions:
         print(cond)
 
-pickle.dump(pkl, open("save.pkl", "wb"))
+pickle.dump(pkl, open(pkl_filename, "wb"))
+hdf.close()
