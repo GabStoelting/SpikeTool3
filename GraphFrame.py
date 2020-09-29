@@ -52,6 +52,8 @@ class MyToolbar(NavigationToolbar2Tk):
         self.select_to.pack(side="left")
         self.update()
 
+        # TODO: Add a reset button for the selection
+
     def change_synchronization(self):
         # This function synchronizes or unsynchronizes the view of the two graphs (raw/di)
         if self.synchronize.get():

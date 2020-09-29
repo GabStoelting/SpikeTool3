@@ -513,12 +513,9 @@ class Controller:
 
     def graph_mouse_released(self, event):
         # This function runs when the mouse button was released
-        if event.button == 1:
-            if not event.dblclick: # This is a remains of the old selection handling
-                # TODO: See, if this is still needed in the future
-                pass
+
         # If the right mouse button (button == 3) was released, show the context menu!
-        elif event.button == 3:
+        if event.button == 3:
             # Get the coordinates
             # TODO: This still doesn't work quite as it should. The appearance is not next to the mouse cursor. Improve!
             graph_frame_x = self.view.graph_frame.winfo_rootx()
@@ -528,7 +525,6 @@ class Controller:
 
     def onselect(self, vmin, vmax):
         # This handles the input from the SpanSelector in GraphFrame
-        print(vmin, vmax)
         (self.select_from, self.select_to) = self.graph_set_from_to(int(vmin), int(vmax))
         self.graph_select_event()
 
@@ -554,14 +550,17 @@ class Controller:
                 # Change the color of the selected events to red
                 self.view_event_update(self.selected_events, "red", lw=1.0)
 
-    def graph_set_from_to(self, value1, value2):
+    def graph_set_from_to(self, vmin, vmax):
         # Set the "From"-Value to zero if the selection extends to lower values
-        if from_value < 0:
-            from_value = 0
+        if vmin < 0:
+            vmin = 0
 
-        if (to_value != None) & (self.selected_cell != None):
-            if to_value >= len(self.selected_cell):
-                to_value = len(self.selected_cell) - 1
+        if vmax < 0 :
+            vmax = 0
+
+        if (vmax != None) & (self.selected_cell != None):
+            if vmax >= len(self.selected_cell):
+                vmax = len(self.selected_cell) - 1
 
         # Delete the old selection boundary lines
         for line in self.select_lines:
@@ -570,30 +569,30 @@ class Controller:
         # Handle the "From" and "To" fields
         # Delete and then fill the "From" field with selected_frame
         self.view.graph_frame.toolbar.select_from.delete(0, tk.END)
-        self.view.graph_frame.toolbar.select_from.insert(0, from_value)
+        self.view.graph_frame.toolbar.select_from.insert(0, vmin)
 
         # Delete the "to" filed if to_value is not specified
-        if to_value == None:
+        if vmax == None:
             self.view.graph_frame.toolbar.select_to.delete(0, tk.END)
         else:
             self.view.graph_frame.toolbar.select_to.delete(0, tk.END)
-            self.view.graph_frame.toolbar.select_to.insert(0, to_value)
+            self.view.graph_frame.toolbar.select_to.insert(0, vmax)
         ###########################
         # Handle the boundary lines
         self.select_lines = []
         # Add the selection start boundary line to the graphs
         self.select_lines.append(
-            self.view.graph_frame.raw_ax.axvline(from_value, lw=1.0, color="black"))
+            self.view.graph_frame.raw_ax.axvline(vmin, lw=1.0, color="black"))
         self.select_lines.append(
-            self.view.graph_frame.di_ax.axvline(from_value, lw=1.0, color="black"))
+            self.view.graph_frame.di_ax.axvline(vmin, lw=1.0, color="black"))
 
-        if to_value != None:
+        if vmax != None:
             # Add the selection end boundary line to the graphs
             self.select_lines.append(
-                self.view.graph_frame.raw_ax.axvline(to_value, lw=1.0, color="black"))
+                self.view.graph_frame.raw_ax.axvline(vmax, lw=1.0, color="black"))
             self.select_lines.append(
-                self.view.graph_frame.di_ax.axvline(to_value, lw=1.0, color="black"))
+                self.view.graph_frame.di_ax.axvline(vmax, lw=1.0, color="black"))
 
         self.view.graph_frame.canvas.draw()
 
-        return (from_value, to_value)
+        return (vmin, vmax)

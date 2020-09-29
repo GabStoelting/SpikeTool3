@@ -110,7 +110,6 @@ class Cell:
         self.events = [x for x in self.events if ((x.frame < start) or (x.frame > end))]
 
     def set_events(self, event_list):
-        # TODO: Determine if this function is needed or can be condensed into add_events()
         # Define the list of events for this cell
         if isinstance(event_list, int):
             event_list = [event_list]
