@@ -42,8 +42,6 @@ class MyToolbar(NavigationToolbar2Tk):
                            command=self.change_show_events)
         c.pack(side="left")
 
-
-
         tk.Label(master=self, text="From: ").pack(side="left")
         self.select_from = tk.Entry(master=self, width=6)
         self.select_from.pack(side="left")
@@ -52,7 +50,11 @@ class MyToolbar(NavigationToolbar2Tk):
         self.select_to.pack(side="left")
         self.update()
 
-        # TODO: Add a reset button for the selection
+        self.cancel_select_icon = tk.PhotoImage(file = r"/home/gabriel/PycharmProjects/SpikeTool3/range.png")
+        self.cancel_select_icon = self.cancel_select_icon.subsample(16) # Resize icon
+        self.cancel_select_button = tk.Button(self, text="Cancel selection", image=self.cancel_select_icon, command=self.cancel_select)
+        self.cancel_select_button.pack(side="left")
+
 
     def change_synchronization(self):
         # This function synchronizes or unsynchronizes the view of the two graphs (raw/di)
@@ -73,6 +75,9 @@ class MyToolbar(NavigationToolbar2Tk):
             self.parent.show_events(True)
         else:
             self.parent.show_events(False)
+
+    def cancel_select(self):
+        self.parent.controller.cancel_selection()
 
     def change_select(self):
         if self.select: # Run if "select" has been pressed before
@@ -134,7 +139,7 @@ class GraphFrame(ttk.Frame):
         self.spansel.active = False
 
         # Connect the mouse button pressed and released events to the controller
-        self.canvas.mpl_connect('button_press_event', self.controller.graph_mouse_pressed)
+        #self.canvas.mpl_connect('button_press_event', self.controller.graph_mouse_pressed)
         self.canvas.mpl_connect('button_release_event', self.controller.graph_mouse_released)
 
     def synchronize_axes(self, sync=True):

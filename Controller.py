@@ -491,26 +491,6 @@ class Controller:
             tk.messagebox.showerror("No cell selected.", "You need to select a cell first!")
             return
 
-    def graph_mouse_pressed(self, event):
-        # Check if the left mouse button (button == 1) was pressed
-        if event.button == 1:
-            # Check if it was not a double click
-            if not event.dblclick: # This is a remains of the old selection handling
-                # TODO: See, if this is still needed
-                pass
-            # If this was otherwise a double click -> delete from and to fields
-            # TODO: Make this work!
-            else:
-                self.select_state = 0
-                for line in self.select_lines:
-                    line.remove()
-                self.select_lines = []
-                self.view.graph_frame.canvas.draw()
-
-                self.select_from = self.select_to = None
-                self.view.graph_frame.toolbar.select_to.delete(0, tk.END)
-                self.view.graph_frame.toolbar.select_from.delete(0, tk.END)
-
     def graph_mouse_released(self, event):
         # This function runs when the mouse button was released
 
@@ -528,6 +508,30 @@ class Controller:
         (self.select_from, self.select_to) = self.graph_set_from_to(int(vmin), int(vmax))
         self.graph_select_event()
 
+    def cancel_selection(self):
+        # Set selected range to None
+        self.select_from = None
+        self.select_to = None
+
+        # Clear the current selection from the listbox
+        self.view.event_frame.event_listbox.selection_clear(0, tk.END)
+
+        for line in self.select_lines:
+            line.remove()
+        self.select_lines = [] # Remove the selection boundary lines
+
+        # Reset the color of the selected events
+        if self.selected_events != None:
+            self.view_event_reset(self.selected_events)
+        self.view.graph_frame.canvas.draw() # Redraw
+
+        # Remove the numbers from the "from" and "to" fields
+        self.view.graph_frame.toolbar.select_to.delete(0, tk.END)
+        self.view.graph_frame.toolbar.select_from.delete(0, tk.END)
+
+        # Empty the selected events
+        self.selected_events = []
+
     def graph_select_event(self):
         # This function updates the list of selected events
         # and redraws the graph to highlight those
@@ -538,7 +542,7 @@ class Controller:
                 self.view_event_reset(self.selected_events)
 
             if self.selected_cell.has_events():
-                # Read the selected events from the graph selection
+                # Read the new selected events within the range of the selection
                 self.selected_events = [i for (i, x) in enumerate(self.selected_cell.events)
                                         if (x.frame >= self.select_from) and (x.frame <= self.select_to)]
 
