@@ -21,7 +21,7 @@ class MyToolbar(NavigationToolbar2Tk):
         super().__init__(figure_canvas, parent)
 
         self.select = False
-        self.select_icon = tk.PhotoImage(file = r"/home/gabriel/PycharmProjects/SpikeTool3/range.png")
+        self.select_icon = tk.PhotoImage(file = r"range.png")
         self.select_icon = self.select_icon.subsample(16) # Resize icon
         self.select_button = tk.Button(self, text="Select", image=self.select_icon, command=self.change_select)
         self.select_button.pack(side="left")
@@ -50,7 +50,7 @@ class MyToolbar(NavigationToolbar2Tk):
         self.select_to.pack(side="left")
         self.update()
 
-        self.cancel_select_icon = tk.PhotoImage(file = r"/home/gabriel/PycharmProjects/SpikeTool3/range.png")
+        self.cancel_select_icon = tk.PhotoImage(file = r"range_cancel.png")
         self.cancel_select_icon = self.cancel_select_icon.subsample(16) # Resize icon
         self.cancel_select_button = tk.Button(self, text="Cancel selection", image=self.cancel_select_icon, command=self.cancel_select)
         self.cancel_select_button.pack(side="left")
