@@ -2,7 +2,7 @@ import tkinter as tk
 import tkinter.ttk as ttk
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
-from matplotlib.widgets import MultiCursor, SpanSelector
+from matplotlib.widgets import SpanSelector
 
 
 class MyToolbar(NavigationToolbar2Tk):
