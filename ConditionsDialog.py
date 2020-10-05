@@ -1,6 +1,6 @@
 import tkinter as tk
 import tkSimpleDialog
-from tkintertable import TableCanvas, TableModel
+from tkintertable import TableCanvas
 
 
 
