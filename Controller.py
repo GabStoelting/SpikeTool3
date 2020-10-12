@@ -459,6 +459,7 @@ class Controller:
             self.view_refresh()
 
     def inactivate_event(self):
+
         if self.selected_events is not None:
             selected_frames = ([self.selected_cell.events[i].frame
                                 for i in self.selected_events])
