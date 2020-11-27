@@ -4,9 +4,10 @@ import tkSimpleDialog
 
 class FindEvents(tkSimpleDialog.Dialog):
 
-    def __init__(self, parent, select_from = None, select_to = None):
+    def __init__(self, parent, select_from = None, select_to = None, last_threshold=1000.0):
         self.select_from = select_from
         self.select_to = select_to
+        self.threshold = last_threshold
 
         super().__init__(parent)
 
@@ -19,7 +20,7 @@ class FindEvents(tkSimpleDialog.Dialog):
 
         self.e1 = tk.Entry(master)
         self.e1.grid(row=1, column=1)
-
+        self.e1.insert(0, str(self.threshold))
         return self.e1  # initial focus
 
     def validate(self):

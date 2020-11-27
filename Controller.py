@@ -34,6 +34,8 @@ class Controller:
         self.select_from = None
         self.select_to = None
         self.select_lines = []
+        
+        self.last_threshold = 1000.0
 
     def run(self):
         self.root.title("Spike Tool")
@@ -169,7 +171,8 @@ class Controller:
         if not self.pickle:
             return
 
-        d = FindEvents(parent=self.root, select_from=self.select_from, select_to=self.select_to)
+        # Create the window for the entry of the threshold
+        d = FindEvents(parent=self.root, select_from=self.select_from, select_to=self.select_to, last_threshold=self.last_threshold)
 
         # See if d.threshold exists
         try:
@@ -180,21 +183,26 @@ class Controller:
         # only proceed if the threshold is larger than 0.0
         if d.threshold <= 0.0:
             return
+        
+        # Store threshold for the next selection
+        self.last_threshold = float(d.threshold)
 
         # Check and ask if the cell already has events assigned
         if self.selected_cell.has_events():
-            msg_box = tk.messagebox.askyesno("Overwrite Events?", "This cell may already contain events within the \
-                                            chosen range. Do you want to replace the potentially existing events?")
-            if msg_box:
-                if self.select_from and self.select_to:
-                    self.selected_cell.reset_events(start=self.select_from, end=self.select_to)
+            if len(list(self.selected_cell.get_event(range(self.select_from, self.select_to)))) > 0:
+                msg_box = tk.messagebox.askyesno("Overwrite Events?", "This cell may already contain events within the \
+                                                 chosen range. Do you want to replace the potentially existing events?")
+                if msg_box:
+                    if self.select_from and self.select_to:
+                        self.selected_cell.reset_events(start=self.select_from, end=self.select_to)
+                    else:
+                        self.selected_cell.reset_events()
                 else:
-                    self.selected_cell.reset_events()
-            else:
-                return
+                    return
 
         # Find events and redraw all necessary views
         events = self.selected_cell.find_events(cutoff=d.threshold, start=self.select_from, end=self.select_to)
+        print(events)
         self.selected_cell.add_events(events)
 
         self.event_list_rebuild()
