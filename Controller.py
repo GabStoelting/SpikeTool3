@@ -30,12 +30,14 @@ class Controller:
         self.condition_text_raw = None
         self.condition_text_di = None
 
+        self.selected_baseline = None
+        self.baseline_lines = None
+        self.baseline_selected_lines = None
+        
         self.select_state = 0
         self.select_from = None
         self.select_to = None
         self.select_lines = []
-        
-        self.last_threshold = 1000.0
 
     def run(self):
         self.root.title("Spike Tool")
@@ -50,6 +52,9 @@ class Controller:
 
         # Bind event context menu to ListBox
         self.view.event_frame.event_listbox.bind("<Button-3>", self.event_context_clicked)
+        
+        # Bind baseline context menu to ListBox
+        self.view.baseline_frame.baseline_listbox.bind("<Button-3>", self.baseline_context_clicked)
 
         # Bind event context menu to ListBox
         self.view.navigation_frame.tree.bind("<Button-3>", self.tree_context_clicked)
@@ -57,6 +62,9 @@ class Controller:
         # Bind the selection of one or more events
         self.view.event_frame.event_listbox.bind('<<ListboxSelect>>', self.event_list_select_event)
 
+        # Bind the selection of one or more events
+        self.view.baseline_frame.baseline_listbox.bind('<<ListboxSelect>>', self.baseline_list_select_baseline)
+        
         self.root.protocol("WM_DELETE_WINDOW", self.quit)
 
     def quit(self):
@@ -71,6 +79,9 @@ class Controller:
 
         # Create context menu for the events ListBox
         self.view.event_frame.create_menu(self)
+        
+        # Create context menu for the baseline ListBox
+        self.view.baseline_frame.create_menu(self)
 
         self.view.navigation_frame.create_menu(self)
 
@@ -171,8 +182,7 @@ class Controller:
         if not self.pickle:
             return
 
-        # Create the window for the entry of the threshold
-        d = FindEvents(parent=self.root, select_from=self.select_from, select_to=self.select_to, last_threshold=self.last_threshold)
+        d = FindEvents(parent=self.root, select_from=self.select_from, select_to=self.select_to)
 
         # See if d.threshold exists
         try:
@@ -183,26 +193,21 @@ class Controller:
         # only proceed if the threshold is larger than 0.0
         if d.threshold <= 0.0:
             return
-        
-        # Store threshold for the next selection
-        self.last_threshold = float(d.threshold)
 
         # Check and ask if the cell already has events assigned
         if self.selected_cell.has_events():
-            if len(list(self.selected_cell.get_event(range(self.select_from, self.select_to)))) > 0:
-                msg_box = tk.messagebox.askyesno("Overwrite Events?", "This cell may already contain events within the \
-                                                 chosen range. Do you want to replace the potentially existing events?")
-                if msg_box:
-                    if self.select_from and self.select_to:
-                        self.selected_cell.reset_events(start=self.select_from, end=self.select_to)
-                    else:
-                        self.selected_cell.reset_events()
+            msg_box = tk.messagebox.askyesno("Overwrite Events?", "This cell may already contain events within the \
+                                            chosen range. Do you want to replace the potentially existing events?")
+            if msg_box:
+                if self.select_from and self.select_to:
+                    self.selected_cell.reset_events(start=self.select_from, end=self.select_to)
                 else:
-                    return
+                    self.selected_cell.reset_events()
+            else:
+                return
 
         # Find events and redraw all necessary views
         events = self.selected_cell.find_events(cutoff=d.threshold, start=self.select_from, end=self.select_to)
-        print(events)
         self.selected_cell.add_events(events)
 
         self.event_list_rebuild()
@@ -271,6 +276,7 @@ class Controller:
 
         # This should only be run if a cell was selected!
         self.event_list_rebuild()
+        self.baseline_list_rebuild()
         self.view_rebuild()
         self.view_refresh()
 
@@ -298,22 +304,24 @@ class Controller:
         # Show the context menu in the event list when clicked
         self.view.event_frame.menu.post(event.x_root, event.y_root)
 
+    def baseline_context_clicked(self, event):
+        # Show the context menu in the baseline list when clicked
+        self.view.baseline_frame.menu.post(event.x_root, event.y_root)
+
     def view_rebuild(self, retain_zoom=False):
         # This clears the graphs and plots the data again
         current_xlim = self.view.graph_frame.raw_ax.get_xlim()
         current_ylim = self.view.graph_frame.raw_ax.get_ylim()
-
         self.view.graph_frame.raw_ax.clear()
         self.view.graph_frame.raw_ax.plot(range(0, len(self.selected_cell.raw_data)), self.selected_cell.raw_data)
 
-        # Todo: Add a way to switch between not showing baseline, showing baseline and showing data with baseline subtracted
+        """# Todo: Add a way to switch between not showing baseline, showing baseline and showing data with baseline subtracted
         try:
             if len(self.selected_cell.baseline) > 0:
                 self.view.graph_frame.raw_ax.plot(range(0, len(self.selected_cell.raw_data)), self.selected_cell.baseline)
         except AttributeError:
-            self.selected_cell.baseline = []
+            self.selected_cell.baseline = []"""
         self.view.graph_frame.di_ax.clear()
-
         self.view.graph_frame.di_ax.plot(range(1, len(self.selected_cell.raw_data)), self.selected_cell.get_di())
 
         # Set the old zoom again if desired
@@ -327,11 +335,38 @@ class Controller:
     def view_refresh(self):
         # Call this function if everything on top of the raw trace should be refreshed
         self.view_event_refresh()
+        self.view_baseline_refresh()
         self.view_condition_refresh()
         self.view.graph_frame.canvas.draw()
+        #tk.messagebox.showinfo(title="refresh", message=f"refresh done")
 
+
+    def view_baseline_refresh(self):
+        # This function replots all baseline lines
+        if self.selected_recording and self.selected_cell:
+
+            if len(self.selected_cell.baseline) > 0:
+
+                # Remove all old lines from the raw graph
+                if self.baseline_lines:
+                    for line in self.baseline_lines:
+                        line.remove()
+
+                self.baseline_lines = []
+                                      
+                self.baseline_lines.append(
+                    self.view.graph_frame.raw_ax.scatter(
+                        [self.selected_cell.baseline[i].frame for i in range(len(self.selected_cell.baseline)) if self.selected_cell.baseline[i].use],
+                            [[0.7] for j in range(len(self.selected_cell.baseline)) if self.selected_cell.baseline[j].use], color="purple"))
+                            
+                self.baseline_lines.append(
+                    self.view.graph_frame.raw_ax.scatter(
+                        [self.selected_cell.baseline[i].frame for i in range(len(self.selected_cell.baseline)) if self.selected_cell.baseline[i].use==False],
+                            [[0.7] for j in range(len(self.selected_cell.baseline)) if self.selected_cell.baseline[j].use==False], color="gray"))      
+                            
+                            
+                            
     def view_event_refresh(self):
-
         # This function replots all events
         if self.selected_recording and self.selected_cell:
             if len(self.selected_cell.events) > 0:
@@ -353,6 +388,7 @@ class Controller:
 
                 if self.view.graph_frame.toolbar.show_events.get():
                     for i, event in enumerate(self.selected_cell.events):
+
                         if event.use:
                             self.event_lines_raw.append(
                                 self.view.graph_frame.raw_ax.axvline(int(event.frame), lw=0.5, color="green"))
@@ -363,6 +399,7 @@ class Controller:
                                 self.view.graph_frame.raw_ax.axvline(int(event.frame), lw=0.2, color="gray"))
                             self.event_lines_di.append(
                                 self.view.graph_frame.di_ax.axvline(int(event.frame), lw=0.2, color="gray"))
+                                
 
     def view_condition_refresh(self):
         # This function refreshes the displayed information about conditions
@@ -410,6 +447,13 @@ class Controller:
 
         self.view.graph_frame.canvas.draw()
 
+#def view_baseline_update(self, baseline_i, color, lw=0.2):
+        # This function only changes a subset of the baseline lines
+        #[self.baseline_lines[i].set_color(color) for i in baseline_i]
+        #[self.baseline_lines[i].set_linewidth(lw) for i in baseline_i]
+
+        #self.view.graph_frame.canvas.draw()
+
     def view_event_reset(self, event_i):
         for i in event_i:
             event = self.selected_cell.events[i]
@@ -424,7 +468,16 @@ class Controller:
                 self.event_lines_raw[i].set_linewidth(0.2)
                 self.event_lines_di[i].set_linewidth(0.2)
 
+    """def view_baseline_reset(self, baseline_i):
+        for i in baseline_i:
+            baseline = self.selected_cell.baseline[i]
+            if baseline.use:
 
+                self.baseline_lines[i].set_color("purple")
+                self.baseline_lines[i].set_linewidth(0.5)
+            else:
+                self.baseline_lines[i].set_color("gray")
+                self.baseline_lines[i].set_linewidth(0.2)"""
 
     def event_list_rebuild(self):
         self.view.event_frame.event_listbox.delete(0, "end")
@@ -434,8 +487,22 @@ class Controller:
             else:
                 self.view.event_frame.event_listbox.insert("end", f"{event.frame}")
                 self.view.event_frame.event_listbox.itemconfig(i, {"fg": "grey"})
+                            
+    def baseline_list_rebuild(self):
+        try:
+            self.view.baseline_frame.baseline_listbox.delete(0, "end")
+            for i, baseline in enumerate(self.selected_cell.baseline):
+                if baseline.use:
+                    self.view.baseline_frame.baseline_listbox.insert("end", f"{baseline.frame}")
+                else:
+                    self.view.baseline_frame.baseline_listbox.insert("end", f"{baseline.frame}")
+                    self.view.baseline_frame.baseline_listbox.itemconfig(i, {"fg": "grey"})
+        except AttributeError:
+            self.selected_cell.baseline = []
+
 
     def event_list_select_event(self, event):
+        
         # This function updates the list of selected events
         # and redraws the graph to highlight those
 
@@ -449,6 +516,34 @@ class Controller:
         # Change the color of the selected events to red
         if self.selected_events is not None:
             self.view_event_update(self.selected_events, "red", lw=1.0)
+
+    def baseline_list_select_baseline(self, event):
+        # This function updates the list of selected baseline frames
+        # and redraws the graph to highlight those
+
+        # First reset the old baseline frames to their colors
+        #if self.selected_baseline is not None:
+        #    self.view_baseline_reset(self.selected_baseline)
+
+        # Read the selected baseline frames from the listbox
+        self.selected_baseline = ([i for i in self.view.baseline_frame.baseline_listbox.curselection()])
+
+
+        # Change the color of the selected baseline frames plot
+        if self.baseline_selected_lines:
+            for line in self.baseline_selected_lines:
+                line.remove()
+
+        self.baseline_selected_lines = []
+                                              
+        self.baseline_selected_lines.append(
+            self.view.graph_frame.raw_ax.scatter(
+                [item.frame for i, item in enumerate(self.selected_cell.baseline) if i in self.selected_baseline],
+                    [[0.6] for j, item in enumerate(self.selected_cell.baseline) if j in self.selected_baseline], color="pink"))
+                    
+        self.view.graph_frame.canvas.draw()
+
+                        
 
     def add_event_list(self):
         d = AddEvents(self.root)
@@ -466,8 +561,13 @@ class Controller:
             self.event_list_rebuild()
             self.view_refresh()
 
-    def inactivate_event(self):
+    def add_baseline_list(self):        
+        self.selected_cell.reset_baseline(self.select_from, self.select_to)
+        self.selected_cell.add_baseline(list(range(self.select_from, self.select_to)))
+        self.baseline_list_rebuild()
+        self.view_refresh()
 
+    def inactivate_event(self):
         if self.selected_events is not None:
             selected_frames = ([self.selected_cell.events[i].frame
                                 for i in self.selected_events])
@@ -477,6 +577,22 @@ class Controller:
 
         else:
             tk.messagebox.showerror("No cell selected.", "You need to select a cell first!")
+            return
+
+    def inactivate_baseline(self):
+        if self.selected_baseline is not None:
+            selected_frames = ([self.selected_cell.baseline[i].frame
+                                for i in self.selected_baseline])
+            self.selected_cell.reject_baseline(selected_frames)
+            self.baseline_list_rebuild()
+            self.view_baseline_refresh()
+            self.view.graph_frame.canvas.draw()
+
+            #self.view_baseline_update(self.selected_events, "gray")
+
+        else:
+            tk.messagebox.showerror(title="selected baseline", message=f"!--{self.selected_baseline}--!")
+            tk.messagebox.showerror("Inactivations: No baseline frames selected.", "You need to select baseline frames first!")
             return
 
     def inactivate_cell(self):
@@ -500,6 +616,22 @@ class Controller:
             tk.messagebox.showerror("No cell selected.", "You need to select a cell first!")
             return
 
+    def activate_baseline(self):
+        if self.selected_baseline is not None:
+            selected_frames = ([self.selected_cell.baseline[i].frame
+                                for i in self.selected_baseline])
+            self.selected_cell.activate_baseline(selected_frames)
+            self.baseline_list_rebuild()
+            self.view_baseline_refresh()
+            self.view.graph_frame.canvas.draw()
+
+            #self.view_baseline_update(self.selected_events, "purple", lw=0.5)
+        else:
+            tk.messagebox.showerror("Activation: No Baseline frames selected.", "You need to select baseline frames first!")
+            return
+
+
+
     def graph_mouse_released(self, event):
         # This function runs when the mouse button was released
 
@@ -516,6 +648,8 @@ class Controller:
         # This handles the input from the SpanSelector in GraphFrame
         (self.select_from, self.select_to) = self.graph_set_from_to(int(vmin), int(vmax))
         self.graph_select_event()
+        self.graph_select_baseline()
+
 
     def cancel_selection(self):
         # Set selected range to None
@@ -524,6 +658,8 @@ class Controller:
 
         # Clear the current selection from the listbox
         self.view.event_frame.event_listbox.selection_clear(0, tk.END)
+        self.view.baseline_frame.baseline_listbox.selection_clear(0, tk.END)
+
 
         for line in self.select_lines:
             line.remove()
@@ -533,14 +669,19 @@ class Controller:
         if self.selected_events != None:
             self.view_event_reset(self.selected_events)
         self.view.graph_frame.canvas.draw() # Redraw
+        
+        #if self.selected_baseline != None:
+            #self.view_baseline_reset(self.selected_baseline)
+        #self.view.graph_frame.canvas.draw() # Redraw
 
         # Remove the numbers from the "from" and "to" fields
         self.view.graph_frame.toolbar.select_to.delete(0, tk.END)
         self.view.graph_frame.toolbar.select_from.delete(0, tk.END)
 
-        # Empty the selected events
+        # Empty the selected events and baseline frames
         self.selected_events = []
-
+        self.selected_baseline = []
+        
     def graph_select_event(self):
         # This function updates the list of selected events
         # and redraws the graph to highlight those
@@ -562,6 +703,53 @@ class Controller:
                 self.view.event_frame.event_listbox.selection_set(self.selected_events[0], self.selected_events[-1])
                 # Change the color of the selected events to red
                 self.view_event_update(self.selected_events, "red", lw=1.0)
+
+    def graph_select_baseline(self):
+        # This function updates the list of selected baseline frames
+        # and redraws the graph to highlight those
+
+        if self.selected_cell != None:
+            # First reset the old baseline frames to their colors
+            #if self.selected_baseline is not None:
+                #self.view_baseline_reset(self.selected_baseline)
+
+            if self.selected_cell.has_baseline():
+                # Read the new selected events within the range of the selection
+                self.selected_baseline = [i for (i, x) in enumerate(self.selected_cell.baseline)
+                                        if (x.frame >= self.select_from) and (x.frame <= self.select_to)]
+
+            if (self.selected_baseline != []) and (self.selected_baseline != None):
+                # Clear the current selection
+                self.view.baseline_frame.baseline_listbox.selection_clear(0, tk.END)
+                # Set the current selection to the ones chosen in the graph
+                self.view.baseline_frame.baseline_listbox.selection_set(self.selected_baseline[0], self.selected_baseline[-1])
+                # show selected baseline frames in graph raw frame
+
+                if self.baseline_selected_lines:
+                    for line in self.baseline_selected_lines:
+                        line.remove()
+
+                self.baseline_selected_lines = []
+                                      
+                self.baseline_selected_lines.append(
+                    self.view.graph_frame.raw_ax.scatter(
+                        [item.frame for i, item in enumerate(self.selected_cell.baseline) if i in self.selected_baseline],
+                            [[0.67] for j, item in enumerate(self.selected_cell.baseline) if j in self.selected_baseline], color="pink"))
+                
+                self.view.graph_frame.canvas.draw()
+
+                
+
+                            
+                            
+            
+                                              
+                        
+                
+                
+
+
+
 
     def graph_set_from_to(self, vmin, vmax):
         # Set the "From"-Value to zero if the selection extends to lower values

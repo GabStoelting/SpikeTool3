@@ -37,9 +37,14 @@ class MyToolbar(NavigationToolbar2Tk):
         c.pack(side="left")
 
         self.show_events = tk.IntVar(value=1)
-
+        self.show_baseline = tk.IntVar(value=1)
+    
         c = tk.Checkbutton(self, text="Show events", variable=self.show_events,
                            command=self.change_show_events)
+        c.pack(side="left")
+
+        c = tk.Checkbutton(self, text="Show baseline", variable=self.show_baseline,
+                           command=self.change_show_baseline)
         c.pack(side="left")
 
         tk.Label(master=self, text="From: ").pack(side="left")
@@ -75,6 +80,12 @@ class MyToolbar(NavigationToolbar2Tk):
             self.parent.show_events(True)
         else:
             self.parent.show_events(False)
+
+    def change_show_baseline(self):
+        if self.show_baseline.get():
+            self.parent.show_baseline(True)
+        else:
+            self.parent.show_baseline(False)
 
     def cancel_select(self):
         self.parent.controller.cancel_selection()
@@ -135,12 +146,11 @@ class GraphFrame(ttk.Frame):
 
         # Setup the span selector
         rectprops = dict(facecolor='blue', alpha=0.5)
-        self.spansel = SpanSelector(self.raw_ax, self.controller.onselect, 'horizontal', rectprops=rectprops,
-                                    useblit=True, button=1)
+        self.spansel = SpanSelector(self.raw_ax, self.controller.onselect, 'horizontal', rectprops=rectprops, useblit=True)
         self.spansel.active = False
 
         # Connect the mouse button pressed and released events to the controller
-        # self.canvas.mpl_connect('button_press_event', self.controller.graph_mouse_pressed)
+        #self.canvas.mpl_connect('button_press_event', self.controller.graph_mouse_pressed)
         self.canvas.mpl_connect('button_release_event', self.controller.graph_mouse_released)
 
     def synchronize_axes(self, sync=True):
@@ -153,6 +163,9 @@ class GraphFrame(ttk.Frame):
         self.controller.view_refresh()
 
     def show_events(self):
+        self.controller.view_refresh()
+        
+    def show_baseline(self):
         self.controller.view_refresh()
 
     def show_selection_cursor(self):

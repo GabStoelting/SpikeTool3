@@ -29,7 +29,7 @@ class ConditionsDialog(tkSimpleDialog.Dialog):
                     # Add all other informations for this condition
                     if info not in self.table:
                         self.table[info] = {"name": info}
-                    self.table[info][f"c{i+1}"] = str(cond.information[info])
+                    self.table[info][f"c{i+1}"] = cond.information[info]
 
         super().__init__(parent)
 

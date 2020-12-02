@@ -12,6 +12,10 @@ class MainMenu(tk.Menu):
 
         self.eventmenu = tk.Menu(self)
         self.add_cascade(label="Events", menu=self.eventmenu)
+        
+        self.baselinemenu = tk.Menu(self)
+        self.add_cascade(label="Baseline", menu=self.baselinemenu)
+
 
     def create_menu(self, parent):
         self.filemenu.add_command(label="New Pickle...", command=parent.new_file)
@@ -30,6 +34,10 @@ class MainMenu(tk.Menu):
         self.eventmenu.add_separator()
         self.eventmenu.add_command(label="Delete Event(s)", command=parent.delete_event_list)
 
+        self.baselinemenu.add_command(label="Add selected frames to Baseline List", command=parent.add_baseline_list)
+        self.baselinemenu.add_separator()
+        self.baselinemenu.add_command(label="Activate Baseline Frames", command=parent.activate_baseline)
+        self.baselinemenu.add_command(label="Inactivate Baseline Frames", command=parent.inactivate_baseline)
 
 
         # Disable all menu entries which can only be accessed if a file has been opened
@@ -43,5 +51,6 @@ class MainMenu(tk.Menu):
         self.eventmenu.entryconfig("Find Events by Threshold", state=state)
         self.eventmenu.entryconfig("Add Event List", state=state)
         self.eventmenu.entryconfig("Delete Event(s)", state=state)
-
-
+        self.baselinemenu.entryconfig("Add selected frames to Baseline List", state=state)
+        self.baselinemenu.entryconfig("Activate Baseline Frames", state=state)
+        self.baselinemenu.entryconfig("Inactivate Baseline Frames", state=state)
