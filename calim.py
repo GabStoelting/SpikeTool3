@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 # from scipy.signal import find_peaks
 from scipy import sparse
 from scipy.sparse.linalg import spsolve
@@ -71,7 +72,7 @@ class Cell:
         self.information = kwargs
 
     def __repr__(self):
-        return f"cell_id: {self.cell_id}, len: {len(self)} franes, number of events:{len(self.events)}"
+        return f"cell_id: {self.cell_id}, len: {len(self)} frames, number of events:{len(self.events)}"
 
     def __len__(self):
         return len(self.raw_data)
@@ -86,10 +87,11 @@ class Cell:
         self.conditions.append(Condition(start, end, **kwargs))
 
     def get_condition_events(self, **kwargs):
+        print(kwargs)
         for condition in self.conditions:
+            print(condition)
             if kwargs.items() <= condition.information.items():
-                yield (condition.start, condition.end,
-                       self.get_event(range(condition.start, condition.end)))
+                return self.get_event(range(int(condition.start), int(condition.end)))
 
     def has_events(self):
         if len(self.events) > 0:
@@ -192,7 +194,7 @@ class Cell:
             z = spsolve(Z, w * self.raw_data)
             w = p * (self.raw_data > z) + (1 - p) * (self.raw_data < z)
 
-        if z is not 0:
+        if z != 0:
             self.baseline = z
 
 #####################################################################
@@ -223,7 +225,11 @@ class Recording:
         self.dt = dt
         # This is a list of cell objects
         # TODO: Check that raw_data contains at least one cell!
-        self.cells = load_cells(raw_data)
+        if isinstance(raw_data, pd.DataFrame):
+            self.cells = load_cells(raw_data)
+        
+        else:
+            self.cells = None
         # This is a list of condition objects
         self.conditions = []
         # Add to the list if conditions are supplied
@@ -248,7 +254,7 @@ class Recording:
             for cell in self.cells:
                 self.cells[cell].add_condition(start, end, **kwargs)
 
-#####################################################################
+#################################################################### = new
 #
 #####################################################################
 

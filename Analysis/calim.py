@@ -1,4 +1,8 @@
 import numpy as np
+import pandas as pd
+# from scipy.signal import find_peaks
+from scipy import sparse
+from scipy.sparse.linalg import spsolve
 
 #####################################################################
 #
@@ -56,6 +60,11 @@ class Cell:
     def __init__(self, cell_id, raw_data, **kwargs):
         self.cell_id = cell_id
         self.raw_data = raw_data
+        self.baseline_lam = 10e7
+        self.baseline_p = 0.001
+        self.baseline_iter = 10
+        self.baseline = []
+
         self.events = []
         self.conditions = []
         self.use = True
@@ -63,7 +72,7 @@ class Cell:
         self.information = kwargs
 
     def __repr__(self):
-        return f"cell_id: {self.cell_id}, len: {len(self)} franes, number of events:{len(self.events)}"
+        return f"cell_id: {self.cell_id}, len: {len(self)} frames, number of events:{len(self.events)}"
 
     def __len__(self):
         return len(self.raw_data)
@@ -80,8 +89,7 @@ class Cell:
     def get_condition_events(self, **kwargs):
         for condition in self.conditions:
             if kwargs.items() <= condition.information.items():
-                yield (condition.start, condition.end,
-                       self.get_event(range(condition.start, condition.end)))
+                yield (int(condition.start), int(condition.end))
 
     def has_events(self):
         if len(self.events) > 0:
@@ -90,19 +98,18 @@ class Cell:
             return False
 
     def reset_events(self, start=None, end=None):
-        if not start and not end: # Reset all events if start and end are not specified
+        if not start and not end:  # Reset all events if start and end are not specified
             self.events = []
             return
         # If end is not specified but start is, set it from start to the end of the recording
         elif start and not end:
             end = len(self.raw_data)
-        elif not start and end: # This should not happen!
+        elif not start and end:  # This should not happen!
             return
 
-        self.events = [x for x in self.events if ((x.frame<start) or (x.frame>end))]
+        self.events = [x for x in self.events if ((x.frame < start) or (x.frame > end))]
 
     def set_events(self, event_list):
-        # TODO: Determine if this function is needed or can be condensed into add_events()
         # Define the list of events for this cell
         if isinstance(event_list, int):
             event_list = [event_list]
@@ -152,7 +159,7 @@ class Cell:
             if event.frame in frame:
                 event.use = True
 
-    def find_events(self, cutoff=0.0, min_distance_to_last_spike=5, start=None, end=None):
+    def find_events(self, cutoff=0.0, min_distance_to_last_spike=2, start=None, end=None):
         self.cutoff = cutoff
         if self.cutoff > 0:
             d_data = np.diff(self.raw_data)
@@ -164,7 +171,7 @@ class Cell:
 
             for i in range(start, end):
                 if d_data[i] > cutoff:
-                    if (d_data[i-min_distance_to_last_spike:i] < cutoff).all():
+                    if (d_data[i + 1: i + min_distance_to_last_spike + 1] < cutoff).all():
                         yield i+1
             # return eventList
         else:
@@ -172,6 +179,21 @@ class Cell:
 
     def get_di(self):
         return np.diff(self.raw_data)
+
+    def subtract_baseline(self, lam, p, niter=10):
+
+        L = len(self.raw_data)
+        D = sparse.diags([1, -2, 1], [0, -1, -2], shape=(L, L - 2))
+        w = np.ones(L)
+        z = 0
+        for i in range(niter):
+            W = sparse.spdiags(w, 0, L, L)
+            Z = W + lam * D.dot(D.transpose())
+            z = spsolve(Z, w * self.raw_data)
+            w = p * (self.raw_data > z) + (1 - p) * (self.raw_data < z)
+
+        if z != 0:
+            self.baseline = z
 
 #####################################################################
 #
@@ -201,7 +223,11 @@ class Recording:
         self.dt = dt
         # This is a list of cell objects
         # TODO: Check that raw_data contains at least one cell!
-        self.cells = load_cells(raw_data)
+        if isinstance(raw_data, pd.DataFrame):
+            self.cells = load_cells(raw_data)
+        
+        else:
+            self.cells = None
         # This is a list of condition objects
         self.conditions = []
         # Add to the list if conditions are supplied
@@ -226,7 +252,7 @@ class Recording:
             for cell in self.cells:
                 self.cells[cell].add_condition(start, end, **kwargs)
 
-#####################################################################
+#################################################################### = new
 #
 #####################################################################
 
