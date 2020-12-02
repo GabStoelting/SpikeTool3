@@ -1,4 +1,7 @@
 import numpy as np
+# from scipy.signal import find_peaks
+from scipy import sparse
+from scipy.sparse.linalg import spsolve
 
 #####################################################################
 #
@@ -48,6 +51,27 @@ class Event:
 #
 #####################################################################
 
+class Baseline:
+    # This class contains information about a single baseline frame
+    # within a calcium imaging recording
+    #
+
+    def __init__(self, frame):
+        self.frame = frame
+        self.use = True
+
+    def reject(self):
+        self.use = False
+
+    def accept(self):
+        self.use = True
+
+    def __repr__(self):
+        return f"frame: {self.frame}, use:{self.use}"
+
+#####################################################################
+#
+#####################################################################
 
 class Cell:
     # This class contains information about a single cell
@@ -56,6 +80,11 @@ class Cell:
     def __init__(self, cell_id, raw_data, **kwargs):
         self.cell_id = cell_id
         self.raw_data = raw_data
+        self.baseline_lam = 10e7
+        self.baseline_p = 0.001
+        self.baseline_iter = 10
+        self.baseline = []
+
         self.events = []
         self.conditions = []
         self.use = True
@@ -63,7 +92,7 @@ class Cell:
         self.information = kwargs
 
     def __repr__(self):
-        return f"cell_id: {self.cell_id}, len: {len(self)} franes, number of events:{len(self.events)}"
+        return f"cell_id: {self.cell_id}, len: {len(self)} frames, number of events:{len(self.events)}"
 
     def __len__(self):
         return len(self.raw_data)
@@ -89,32 +118,58 @@ class Cell:
         else:
             return False
 
+    def has_baseline(self):
+        if len(self.baseline) > 0:
+            return True
+        else:
+            return False
+
     def reset_events(self, start=None, end=None):
-        if not start and not end: # Reset all events if start and end are not specified
+        if not start and not end:  # Reset all events if start and end are not specified
             self.events = []
             return
         # If end is not specified but start is, set it from start to the end of the recording
         elif start and not end:
             end = len(self.raw_data)
-        elif not start and end: # This should not happen!
+        elif not start and end:  # This should not happen!
             return
 
-        self.events = [x for x in self.events if ((x.frame<start) or (x.frame>end))]
+        self.events = [x for x in self.events if ((x.frame < start) or (x.frame > end))]
+        
+    def reset_baseline(self, start=None, end=None):
+        if not start and not end:  # Reset all baseline frames if start and end are not specified
+            self.baseline = []
+            return
+        # If end is not specified but start is, set it from start to the end of the recording
+        elif start and not end:
+            end = len(self.raw_data)
+        #elif not start and end:  # This should not happen!
+            #return
+
+        self.baseline = [x for x in self.baseline if ((x.frame < start) or (x.frame > end))]
+  
 
     def set_events(self, event_list):
-        # TODO: Determine if this function is needed or can be condensed into add_events()
         # Define the list of events for this cell
         if isinstance(event_list, int):
             event_list = [event_list]
         self.events = [Event(event) for event in event_list]
-        
+
     def add_events(self, event_list):
         # Add events to the list of events for this cell
-    
+
         if isinstance(event_list, int):
             event_list = [event_list]
         self.events = self.events + [Event(event) for event in event_list]
         self.events = sorted(self.events, key=lambda event: event.frame)
+
+    def add_baseline(self, baseline_list):
+		# Add baseline frames to the list of baseline for this cell
+
+        if isinstance(baseline_list, int):
+            baseline_list = [baseline_list]
+        self.baseline = self.baseline + [Baseline(baseline_frame) for baseline_frame in baseline_list]
+        self.baseline = sorted(self.baseline, key=lambda baseline_frame: baseline_frame.frame)
 
     def get_event(self, frame, only_active=True):
         # Get a list of events from this cell
@@ -128,6 +183,18 @@ class Cell:
                 else:
                     yield event
 
+    def get_baseline(self, frame, only_active=True):
+        # Get a list of baseline frames from this cell
+        if isinstance(frame, int):
+            frame = [frame]
+        for baseline_frame in self.baseline:
+            if baseline_frame.frame in frame:
+                if only_active:
+                    if baseline_frame.use is True:
+                        yield baseline_frame
+                else:
+                    yield baseline_frame
+					
     def reject_event(self, frame):
         # Reject a single event or a list of events
         if isinstance(frame, int):
@@ -135,7 +202,15 @@ class Cell:
         for event in self.events:
             if event.frame in frame:
                 event.use = False
-
+                
+    def reject_baseline(self, frame):
+        # Reject a single baseline frame or a list of baseline
+        if isinstance(frame, int):
+            frame = [frame]
+        for baseline in self.baseline:
+            if baseline.frame in frame:
+                baseline.use = False
+                
     def delete_events(self, frame):
         # Delete a single event or a list of events
         if isinstance(frame, int):
@@ -143,7 +218,7 @@ class Cell:
         frames_to_be_deleted = [x for x in self.get_event(frame, only_active=False)]
         for event in frames_to_be_deleted:
             self.events.remove(event)
-
+            
     def activate_event(self, frame):
         # Reject a single event or a list of events
         if isinstance(frame, int):
@@ -151,8 +226,16 @@ class Cell:
         for event in self.events:
             if event.frame in frame:
                 event.use = True
-
-    def find_events(self, cutoff=0.0, min_distance_to_last_spike=5, start=None, end=None):
+                
+    def activate_baseline(self, frame):
+        # Activate a single baseline frame or a list of baseline
+        if isinstance(frame, int):
+            frame = [frame]
+        for baseline in self.baseline:
+            if baseline.frame in frame:
+                baseline.use = True     
+                                 
+    def find_events(self, cutoff=0.0, min_distance_to_last_spike=2, start=None, end=None):
         self.cutoff = cutoff
         if self.cutoff > 0:
             d_data = np.diff(self.raw_data)
@@ -164,14 +247,29 @@ class Cell:
 
             for i in range(start, end):
                 if d_data[i] > cutoff:
-                    if (d_data[i-min_distance_to_last_spike:i] < cutoff).all():
+                    if (d_data[i + 1: i + min_distance_to_last_spike + 1] < cutoff).all():
                         yield i+1
             # return eventList
         else:
             return []
-
+	
     def get_di(self):
         return np.diff(self.raw_data)
+
+    def subtract_baseline(self, lam, p, niter=10):
+
+        L = len(self.raw_data)
+        D = sparse.diags([1, -2, 1], [0, -1, -2], shape=(L, L - 2))
+        w = np.ones(L)
+        z = 0
+        for i in range(niter):
+            W = sparse.spdiags(w, 0, L, L)
+            Z = W + lam * D.dot(D.transpose())
+            z = spsolve(Z, w * self.raw_data)
+            w = p * (self.raw_data > z) + (1 - p) * (self.raw_data < z)
+
+        if z is not 0:
+            self.baseline = z
 
 #####################################################################
 #
