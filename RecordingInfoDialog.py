@@ -10,13 +10,12 @@ class RecordingInfoDialog(tkSimpleDialog.Dialog):
         self.information = None
         self.dt = None
         self.successful = False
-
-        self.table = {"dt": {"name": "dt", "value": dt}}
+        self.table = {"dt": {"name": "dt", "value": str(dt)}}
         if kwargs:
             for key in kwargs.keys():
-                self.table[key] = {"name": key, "value": kwargs[key]}
+                self.table[key] = {"name": key, "value": str(kwargs[key])}
         else:
-            self.table["animal"] = {"name": "animal", "value": 0}
+            self.table["animal"] = {"name": "animal", "value": [0]}
             self.table["genotype"] = {"name": "genotype", "value": "wt"}
             self.table["birthdate"] = {"name": "birthdate", "value": "1900-01-01"}
 
@@ -40,6 +39,7 @@ class RecordingInfoDialog(tkSimpleDialog.Dialog):
         self.information = {self.information_table.getModel().data[key]["name"]:
                                 self.information_table.getModel().data[key]["value"]
                             for key in self.information_table.getModel().data}
+        print(self.information)
         if not "dt" in self.information:
             tk.messagebox.showerror("No dt found.", "You need to provide a dt value!")
             self.information = None
@@ -47,6 +47,7 @@ class RecordingInfoDialog(tkSimpleDialog.Dialog):
 
         try:
             self.dt = float(self.information.pop("dt", None))
+            print(self.information.pop("dt", None), self.dt)
         except ValueError:
             tk.messagebox.showerror("dt is not numeric.", "You need to provide a numeric value for dt!")
             self.information = None

@@ -406,6 +406,9 @@ class Recording:
                 cond_values = np.append(cond_values, cond.values())
             cond_values = cond_values.reshape(-1, len(self.conditions[0].descriptors()))
             cond_grp.create_dataset(f"rec_conditions", data=cond_values)
+            
+    def load_hdf(self, rec_grp):
+        pass
 
 #####################################################################
 #
@@ -440,6 +443,8 @@ class Project:
         
         # Iterate over recordings
         for r in f["recordings"]:
+            
+            
             rec_name = f"recordings/{r}"
             rec_attrs = list(f[rec_name].attrs)
             
@@ -459,6 +464,7 @@ class Project:
             # Create a new recording
             rec = Recording(file_id, dt, None, **info)
             
+            # Read and append the recording conditions
             if "conditions" in f[f"recordings/{r}"]:
                 cond_cols = f[f"recordings/{r}/conditions"].attrs["columns"]
                 cond_vals = np.array(
@@ -487,12 +493,15 @@ class Project:
                     raw_data = np.array(f.get(f"{rec_name}/cells/{c}"))
                     
                     info = {}
+                    # Load the other attributes 
                     for a in cell_attrs:
                         info[a] = f[f"{rec_name}/cells/{c}"].attrs[a]
+                        
+                    # Create cell and append to recording
                     rec.cells[c] = Cell(cell_id, raw_data, use=use, 
                                         cutoff=cutoff, **info)
                     
-
+                    # Read and append the cell conditions
                     if "conditions" in f[f"{rec_name}/cells"]:
                         cond_cols = f[f"{rec_name}/cells/conditions/{c}"].attrs["columns"]
                         cond_vals = np.array(
@@ -502,20 +511,22 @@ class Project:
                             for i, col in enumerate(cond_cols):
                                 cond[col] = cv[i]
                             rec.cells[c].add_condition(**cond)
-                            
+                    
+                    # Read and append events       
                     if "events" in f[f"{rec_name}/cells"]:
                         if c in f[f"{rec_name}/cells/events"]:  
                             event_list = np.array(f.get(f"{rec_name}/cells/events/{c}"))
                             for e in event_list:
                                 rec.cells[c].events.append(Event(frame=e[0], use=e[1]))
                             
-                               
+                    # Read and append baseline         
                     if "baseline" in f[f"{rec_name}/cells"]:
                         if c in f[f"{rec_name}/cells/baseline"]:
                             baseline_list = np.array(f.get(f"{rec_name}/cells/baseline/{c}"))
                             for b in baseline_list:
                                 rec.cells[c].baseline.append(Event(frame=b[0], use=b[1]))
                 
+                # Add recording to project
                 self.append(rec)
                             
                                     

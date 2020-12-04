@@ -94,25 +94,38 @@ class Controller:
         self.view.menu.recording_menu_state(state="normal")  # Activate menus
 
     def open_file(self):
-        filename = tk.filedialog.askopenfilename(filetypes=(("Python Pickle", "*.pkl"), ("All Files", "*.*")),
+        filename = tk.filedialog.askopenfilename(filetypes=(("HDF5 File", "*.hdf"), ("Python Pickle", "*.pkl"), ("All Files", "*.*")),
                                                  title="Choose a file.")
         if not filename:
             return False
-        self.pickle = pickle.load(open(filename, "rb"))
+        
+        if filename.lower().endswith(".pkl"):
+            self.pickle = pickle.load(open(filename, "rb"))
+        elif filename.lower().endswith(".hdf"):
+            self.pickle = Project()
+            self.pickle.from_hdf(filename)
+        else:
+            return False
+        
         self.view.menu.recording_menu_state(state="normal")  # Activate menus
         self.tree_redraw()
 
     def save_file(self):
         # Ask for a filename for the pickle to be saved at
-        filename = tk.filedialog.asksaveasfilename(filetypes=(("Python Pickle", "*.pkl"), ("All Files", "*.*")),
+        filename = tk.filedialog.asksaveasfilename(filetypes=(("HDF5 File", "*.hdf"), ("Python Pickle", "*.pkl"), ("All Files", "*.*")),
                                                    title="Choose a file.")
         if not filename:
             return False
 
-        if not filename.endswith(".pkl"):
-            filename = filename + ".pkl"
-
-        pickle.dump(self.pickle, open(filename, "wb"))
+        
+        if filename.lower().endswith(".pkl"):
+            pickle.dump(self.pickle, open(filename, "wb"))
+        elif filename.lower().endswith(".hdf"):
+            self.pickle.to_hdf(filename)
+        else:
+            filename = filename+".hdf"
+            self.pickle.to_hdf(filename)
+        
 
     def show_recording_information(self):
         # This opens the recording information table
