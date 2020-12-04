@@ -23,13 +23,13 @@ class ConditionsDialog(tkSimpleDialog.Dialog):
 
             for i, cond in enumerate(conditions):
                 # Add start and end entries
-                self.table["start"][f"c{i+1}"] = cond.start
-                self.table["end"][f"c{i+1}"] = cond.end
+                self.table["start"][f"c{i+1}"] = int(cond.start)
+                self.table["end"][f"c{i+1}"] = int(cond.end)
                 for info in cond.information:
                     # Add all other informations for this condition
                     if info not in self.table:
                         self.table[info] = {"name": info}
-                    self.table[info][f"c{i+1}"] = cond.information[info]
+                    self.table[info][f"c{i+1}"] = [cond.information[info]]
 
         super().__init__(parent)
 
