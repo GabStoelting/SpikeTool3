@@ -24,11 +24,12 @@ class Condition:
         return f"From frame {self.start} to {self.end}, deadtime: {self.deadtime}, information: {self.information}"
     
     def values(self):
-        # return the values of this condition as a numpy array
-        vals = np.array([self.start, self.end, self.deadtime]).astype(int)
+        # return the values of this condition as a list
+        
+        vals = [self.start, self.end, self.deadtime]
         for info in self.information:
-            vals = np.append(vals, self.information[info]).astype(int)
-            
+            vals.append(self.information[info])
+        vals = [str(a).encode("utf8") for a in vals]
         return vals
     
     def descriptors(self):
@@ -117,9 +118,7 @@ class Cell:
         self.conditions.append(Condition(start, end, **kwargs))
 
     def get_condition_events(self, **kwargs):
-        print(kwargs)
         for condition in self.conditions:
-            print(condition)
             if kwargs.items() <= condition.information.items():
                 return self.get_event(range(int(condition.start), int(condition.end)))
 
@@ -309,12 +308,10 @@ class Cell:
             # Add the column descriptors into the attributes
             cond_grp = cell_grp.create_group(f"conditions/{self.cell_id}")
             cond_grp.attrs["columns"] = self.conditions[0].descriptors()
-           
             # Now, combine the condition data into a numpy array
-            cond_values = np.array([])
+            cond_values = []
             for cond in self.conditions:
-                cond_values = np.append(cond_values, cond.values())
-            cond_values = cond_values.reshape(-1, len(self.conditions[0].descriptors()))
+                cond_values.append(cond.values())
             cond_grp.create_dataset(f"{self.cell_id}", data=cond_values)
 
 
@@ -375,6 +372,7 @@ class Recording:
         self.conditions.append(Condition(start, end, **kwargs))
         # Automatically update the conditions for all cells
         if update_cells is True:
+            
             for cell in self.cells:
                 self.cells[cell].add_condition(start, end, **kwargs)
                 
@@ -401,11 +399,16 @@ class Recording:
             cond_grp.attrs["columns"] = self.conditions[0].descriptors()
            
             # Now, combine the condition data into a numpy array
-            cond_values = np.array([])
+            cond_values = []
             for cond in self.conditions:
-                cond_values = np.append(cond_values, cond.values())
+                cond_values.append(cond.values())
+            cond_values = np.array(cond_values)
+
             cond_values = cond_values.reshape(-1, len(self.conditions[0].descriptors()))
+
             cond_grp.create_dataset(f"rec_conditions", data=cond_values)
+
+
             
     def load_hdf(self, rec_grp):
         pass
@@ -438,12 +441,10 @@ class Project:
     
     def from_hdf(self, filename):
         # Load from HDF
-        print("Project.from_hdf")
         f = h5py.File(filename, "r")
         
         # Iterate over recordings
         for r in f["recordings"]:
-            
             
             rec_name = f"recordings/{r}"
             rec_attrs = list(f[rec_name].attrs)
@@ -468,7 +469,7 @@ class Project:
             if "conditions" in f[f"recordings/{r}"]:
                 cond_cols = f[f"recordings/{r}/conditions"].attrs["columns"]
                 cond_vals = np.array(
-                    f.get(f"recordings/{r}/conditions/rec_conditions")).astype(float)
+                    f.get(f"recordings/{r}/conditions/rec_conditions")) #.astype(float)
                 for cv in cond_vals:
                     cond= {}
                     for i, col in enumerate(cond_cols):
@@ -505,7 +506,7 @@ class Project:
                     if "conditions" in f[f"{rec_name}/cells"]:
                         cond_cols = f[f"{rec_name}/cells/conditions/{c}"].attrs["columns"]
                         cond_vals = np.array(
-                            f.get(f"{rec_name}/cells/conditions/{c}/{c}")).astype(float)
+                            f.get(f"{rec_name}/cells/conditions/{c}/{c}")) #.astype(float)
                         for cv in cond_vals:
                             cond= {}
                             for i, col in enumerate(cond_cols):

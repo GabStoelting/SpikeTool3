@@ -52,4 +52,12 @@ class ConditionsDialog(tkSimpleDialog.Dialog):
         self.information = {col: {self.information_table.getModel().data[key]["name"]:
                                 self.information_table.getModel().data[key][col]
                             for key in self.information_table.getModel().data} for col in self.information_table.getModel().columnNames}
+        
         self.information.pop("name") # Remove the first "name" column from the dictionary
+
+        for c in self.information:
+            for key in self.information[c]:
+                if isinstance(self.information[c][key], list):
+                    self.information[c][key] = self.information[c][key][0]
+        print(self.information)
+[]

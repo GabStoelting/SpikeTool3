@@ -70,7 +70,7 @@ class Controller:
     def quit(self):
         # Right now, this just quits everything
         # TODO: Add some safety checks
-        self.root.quit()
+        self.root.destroy()
 
     def setup_menu(self):
 
@@ -160,6 +160,10 @@ class Controller:
 
         # Now put the new or changed conditions into the file
         if d.information:
+            # Delete old conditions in recording
+            self.pickle.recordings[self.selected_recording].conditions = []
+            for cell in self.pickle.recordings[self.selected_recording].cells:
+                self.pickle.recordings[self.selected_recording].cells[cell].conditions = []
             for condition in d.information:
                 if d.information[condition]["end"] == "end":
                     d.information[condition]["end"] = len(self.pickle.recordings[self.selected_recording])

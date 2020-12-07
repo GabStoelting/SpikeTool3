@@ -4,7 +4,7 @@ from tkinter import font
 
 matplotlib.use("TkAgg")
 
-version = "20200515-GS"
+version = "20201207-GS"
 
 app = Controller()
 
