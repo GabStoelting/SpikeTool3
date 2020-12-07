@@ -2,6 +2,12 @@ import tkinter as tk
 import tkSimpleDialog
 from tkintertable import TableCanvas
 
+def flatten(input_l): 
+    for l in input_l:
+        if isinstance(l, list):
+            yield from flatten(l)
+        else:
+            yield l
 
 
 class ConditionsDialog(tkSimpleDialog.Dialog):
@@ -57,7 +63,8 @@ class ConditionsDialog(tkSimpleDialog.Dialog):
 
         for c in self.information:
             for key in self.information[c]:
+                # Extract only the information if the entry is a list itself
                 if isinstance(self.information[c][key], list):
-                    self.information[c][key] = self.information[c][key][0]
-        print(self.information)
-[]
+                    # We've had problems with misbehaving lists, so
+                    # flatten the list and then store the only entry
+                    self.information[c][key] = list(flatten(self.information[c][key]))[0]
