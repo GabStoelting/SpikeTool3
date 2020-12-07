@@ -455,18 +455,19 @@ class Controller:
         #self.view.graph_frame.canvas.draw()
 
     def view_event_reset(self, event_i):
-        for i in event_i:
-            event = self.selected_cell.events[i]
-            if event.use:
-                self.event_lines_raw[i].set_color("green")
-                self.event_lines_di[i].set_color("green")
-                self.event_lines_raw[i].set_linewidth(0.5)
-                self.event_lines_di[i].set_linewidth(0.5)
-            else:
-                self.event_lines_raw[i].set_color("gray")
-                self.event_lines_di[i].set_color("gray")
-                self.event_lines_raw[i].set_linewidth(0.2)
-                self.event_lines_di[i].set_linewidth(0.2)
+        if event_i[-1] < len(self.selected_cell.events): #only reset view  selected of events that actually exist in the event list of the selected cell
+            for i in event_i:
+                event = self.selected_cell.events[i]
+                if event.use:
+                    self.event_lines_raw[i].set_color("green")
+                    self.event_lines_di[i].set_color("green")
+                    self.event_lines_raw[i].set_linewidth(0.5)
+                    self.event_lines_di[i].set_linewidth(0.5)
+                else:
+                    self.event_lines_raw[i].set_color("gray")
+                    self.event_lines_di[i].set_color("gray")
+                    self.event_lines_raw[i].set_linewidth(0.2)
+                    self.event_lines_di[i].set_linewidth(0.2)
 
     """def view_baseline_reset(self, baseline_i):
         for i in baseline_i:
@@ -688,7 +689,8 @@ class Controller:
 
         if self.selected_cell != None:
             # First reset the old events to their colors
-            if self.selected_events is not None:
+            # only reset view if there are old events selected
+            if ((self.selected_events is not None) and (len(self.selected_events) > 0)): 
                 self.view_event_reset(self.selected_events)
 
             if self.selected_cell.has_events():
