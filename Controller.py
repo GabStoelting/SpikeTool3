@@ -98,6 +98,7 @@ class Controller:
                                                  title="Choose a file.")
         if not filename:
             return False
+        self.root.title(f"Spike Tool {filename}")    
         self.pickle = pickle.load(open(filename, "rb"))
         self.view.menu.recording_menu_state(state="normal")  # Activate menus
         self.tree_redraw()
