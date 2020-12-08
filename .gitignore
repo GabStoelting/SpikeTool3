@@ -1,3 +1,13 @@
 /Analysis/.ipynb_checkpoints/
 /.idea
 /.idea/*
+/startSpikeTool_Laptop.bat
+/startSpikeTool_Work.bat
+/TestPickle.py
+/testSave.py
+/Analysis/*.hdf
+/Analysis/*.pkl
+/Analysis/*.pdf
+/__pycache__/*
+/.spyproject/*
+/Analysis/__pycache__/*

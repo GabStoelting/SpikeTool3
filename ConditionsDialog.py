@@ -3,11 +3,12 @@ import tkSimpleDialog
 from tkintertable import TableCanvas
 
 def flatten(input_l): 
+    # This generator function flattens a nested list
     for l in input_l:
         if isinstance(l, list):
-            yield from flatten(l)
+            yield from flatten(l) # if list, flatten the enclosed list as well
         else:
-            yield l
+            yield l # if no list, just yield from the original
 
 
 class ConditionsDialog(tkSimpleDialog.Dialog):

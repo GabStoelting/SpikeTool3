@@ -1,6 +1,6 @@
 cls
 @echo off
-call C:\Users\gabri\Anaconda3\Scripts\activate.bat C:\Users\gabri\Anaconda3
+call C:\Users\gabri\anaconda3\Scripts\activate.bat C:\Users\gabri\anaconda3
 
-python D:\Gabriel\Python\CalciumImaging\SpikeTool3\convertHDFtoPKL.bat
+python C:\Users\gabri\OneDrive\Python\CalciumImaging\SpikeTool3\HDFtoPKL.py
 pause
