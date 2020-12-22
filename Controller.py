@@ -112,8 +112,9 @@ class Controller:
 
     def save_file(self):
         # Ask for a filename for the pickle to be saved at
-        filename = tk.filedialog.asksaveasfilename(filetypes=(("HDF5 File", "*.hdf"), ("Python Pickle", "*.pkl"), ("All Files", "*.*")),
+        filename = tk.filedialog.asksaveasfilename(defaultextension=".hdf", filetypes=(("HDF5 File", "*.hdf"), ("Python Pickle", "*.pkl"), ("All Files", "*.*")),
                                                    title="Choose a file.")
+        
         if not filename:
             return False
 
