@@ -70,7 +70,7 @@ class Controller:
     def quit(self):
         # Right now, this just quits everything
         # TODO: Add some safety checks
-        self.root.quit()
+        self.root.destroy()
 
     def setup_menu(self):
 
@@ -94,26 +94,41 @@ class Controller:
         self.view.menu.recording_menu_state(state="normal")  # Activate menus
 
     def open_file(self):
-        filename = tk.filedialog.askopenfilename(filetypes=(("Python Pickle", "*.pkl"), ("All Files", "*.*")),
+        filename = tk.filedialog.askopenfilename(filetypes=(("HDF5 File", "*.hdf"), ("Python Pickle", "*.pkl"), ("All Files", "*.*")),
                                                  title="Choose a file.")
         if not filename:
             return False
+       
+        if filename.lower().endswith(".pkl"):
+            self.pickle = pickle.load(open(filename, "rb"))
+        elif filename.lower().endswith(".hdf"):
+            self.pickle = Project()
+            self.pickle.from_hdf(filename)
+        else:
+            return False
+        
         self.root.title(f"Spike Tool {filename}")    
-        self.pickle = pickle.load(open(filename, "rb"))
+
         self.view.menu.recording_menu_state(state="normal")  # Activate menus
         self.tree_redraw()
 
     def save_file(self):
         # Ask for a filename for the pickle to be saved at
-        filename = tk.filedialog.asksaveasfilename(filetypes=(("Python Pickle", "*.pkl"), ("All Files", "*.*")),
+        filename = tk.filedialog.asksaveasfilename(defaultextension=".hdf", filetypes=(("HDF5 File", "*.hdf"), ("Python Pickle", "*.pkl"), ("All Files", "*.*")),
                                                    title="Choose a file.")
+        
         if not filename:
             return False
 
-        if not filename.endswith(".pkl"):
-            filename = filename + ".pkl"
-
-        pickle.dump(self.pickle, open(filename, "wb"))
+        
+        if filename.lower().endswith(".pkl"):
+            pickle.dump(self.pickle, open(filename, "wb"))
+        elif filename.lower().endswith(".hdf"):
+            self.pickle.to_hdf(filename)
+        else:
+            filename = filename+".hdf"
+            self.pickle.to_hdf(filename)
+        
 
     def show_recording_information(self):
         # This opens the recording information table
@@ -148,6 +163,10 @@ class Controller:
 
         # Now put the new or changed conditions into the file
         if d.information:
+            # Delete old conditions in recording
+            self.pickle.recordings[self.selected_recording].conditions = []
+            for cell in self.pickle.recordings[self.selected_recording].cells:
+                self.pickle.recordings[self.selected_recording].cells[cell].conditions = []
             for condition in d.information:
                 if d.information[condition]["end"] == "end":
                     d.information[condition]["end"] = len(self.pickle.recordings[self.selected_recording])
@@ -740,17 +759,6 @@ class Controller:
                             [[0.67] for j, item in enumerate(self.selected_cell.baseline) if j in self.selected_baseline], color="pink"))
                 
                 self.view.graph_frame.canvas.draw()
-
-                
-
-                            
-                            
-            
-                                              
-                        
-                
-                
-
 
 
 

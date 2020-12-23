@@ -19,8 +19,8 @@ class MainMenu(tk.Menu):
 
     def create_menu(self, parent):
         self.filemenu.add_command(label="New Pickle...", command=parent.new_file)
-        self.filemenu.add_command(label="Open Pickle...", command=parent.open_file)
-        self.filemenu.add_command(label="Save as Pickle...", command=parent.save_file)
+        self.filemenu.add_command(label="Open Project...", command=parent.open_file)
+        self.filemenu.add_command(label="Save Project...", command=parent.save_file)
         self.filemenu.add_separator()
         self.filemenu.add_command(label="Add .csv File", command=parent.add_csv)
         self.filemenu.add_separator()
@@ -46,7 +46,7 @@ class MainMenu(tk.Menu):
     def recording_menu_state(self, state="disabled"):
         self.filemenu.entryconfig("Add .csv File", state=state)
         self.filemenu.entryconfig("Create .pdf Overview", state=state)
-        self.filemenu.entryconfig("Save as Pickle...", state=state)
+        self.filemenu.entryconfig("Save Project...", state=state)
         self.eventmenu.entryconfig("Subtract Baseline", state=state)
         self.eventmenu.entryconfig("Find Events by Threshold", state=state)
         self.eventmenu.entryconfig("Add Event List", state=state)

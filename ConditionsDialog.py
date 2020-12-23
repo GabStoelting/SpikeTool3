@@ -2,6 +2,13 @@ import tkinter as tk
 import tkSimpleDialog
 from tkintertable import TableCanvas
 
+def flatten(input_l): 
+    # This generator function flattens a nested list
+    for l in input_l:
+        if isinstance(l, list):
+            yield from flatten(l) # if list, flatten the enclosed list as well
+        else:
+            yield l # if no list, just yield from the original
 
 
 class ConditionsDialog(tkSimpleDialog.Dialog):
@@ -23,13 +30,13 @@ class ConditionsDialog(tkSimpleDialog.Dialog):
 
             for i, cond in enumerate(conditions):
                 # Add start and end entries
-                self.table["start"][f"c{i+1}"] = cond.start
-                self.table["end"][f"c{i+1}"] = cond.end
+                self.table["start"][f"c{i+1}"] = int(float(cond.start))
+                self.table["end"][f"c{i+1}"] = int(float(cond.end))
                 for info in cond.information:
                     # Add all other informations for this condition
                     if info not in self.table:
                         self.table[info] = {"name": info}
-                    self.table[info][f"c{i+1}"] = cond.information[info]
+                    self.table[info][f"c{i+1}"] = [cond.information[info]]
 
         super().__init__(parent)
 
@@ -52,4 +59,13 @@ class ConditionsDialog(tkSimpleDialog.Dialog):
         self.information = {col: {self.information_table.getModel().data[key]["name"]:
                                 self.information_table.getModel().data[key][col]
                             for key in self.information_table.getModel().data} for col in self.information_table.getModel().columnNames}
+        
         self.information.pop("name") # Remove the first "name" column from the dictionary
+
+        for c in self.information:
+            for key in self.information[c]:
+                # Extract only the information if the entry is a list itself
+                if isinstance(self.information[c][key], list):
+                    # We've had problems with misbehaving lists, so
+                    # flatten the list and then store the only entry
+                    self.information[c][key] = list(flatten(self.information[c][key]))[0]
