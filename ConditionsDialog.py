@@ -30,8 +30,8 @@ class ConditionsDialog(tkSimpleDialog.Dialog):
 
             for i, cond in enumerate(conditions):
                 # Add start and end entries
-                self.table["start"][f"c{i+1}"] = int(cond.start)
-                self.table["end"][f"c{i+1}"] = int(cond.end)
+                self.table["start"][f"c{i+1}"] = int(float(cond.start))
+                self.table["end"][f"c{i+1}"] = int(float(cond.end))
                 for info in cond.information:
                     # Add all other informations for this condition
                     if info not in self.table:
