@@ -312,7 +312,23 @@ class Cell:
             cond_values = []
             for cond in self.conditions:
                 cond_values.append(cond.values())
-            cond_grp.create_dataset(f"{self.cell_id}", data=cond_values)
+            # Try to fix the TypeError:
+            try:
+                print(cond_values)
+                cond_grp.create_dataset(f"{self.cell_id}", data=cond_values)
+            except TypeError:
+                print("#######################################")
+                print(cell_grp.name)
+                print(".......................................")
+                for c in cond_values:
+                    for a in c:
+                        try:
+                            print(str(a))
+                        except TypeError:
+                            print("---------------------------------------")
+                            print(cond_values)
+                    print("#######################################")
+                raise
 
 
         
@@ -379,6 +395,7 @@ class Recording:
     def store_hdf(self, rec_grp):
         # Store all informations about the recordings
         # in the group attributes
+        print(rec_grp.name)
         rec_grp.attrs["file_id"] = self.file_id # fixed
         rec_grp.attrs["dt"] = self.dt # fixed
         
