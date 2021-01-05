@@ -313,8 +313,23 @@ class Cell:
             for cond in self.conditions:
                 cond_values.append(cond.values())
             # Try to fix the TypeError:
+
+            # Is the problem perhaps the unequal sizes of condition lists
+            # for some entries?
+
+            # Get the length of each condition step:
+            len_cond = list(map(len, cond_values))
+            
+            # Check if they aren't the same size
+            # and append b'0' to lists that are shorter 
+            if len(set(len_cond)) > 1:
+                max_len_cond = max(len_cond)
+                for cond in cond_values:
+                    if len(cond) < max_len_cond:
+                        for i in range(max_len_cond-len(cond)):
+                            cond.append(b'0')
             try:
-                print(cond_values)
+                #print(len_cond, cond_values, " OK")
                 cond_grp.create_dataset(f"{self.cell_id}", data=cond_values)
             except TypeError:
                 print("#######################################")
@@ -323,7 +338,7 @@ class Cell:
                 for c in cond_values:
                     for a in c:
                         try:
-                            print(str(a))
+                            print(a, type(a))
                         except TypeError:
                             print("---------------------------------------")
                             print(cond_values)
