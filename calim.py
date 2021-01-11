@@ -15,10 +15,13 @@ class Condition:
     # and further definitions as a dictionary in self.information
 
     def __init__(self, start=0, end=0, deadtime=0, **kwargs):
-        self.start = start
-        self.end = end
-        self.deadtime = deadtime
+        self.start = int(self.remove_initial_byte_signs(start))
+        self.end = int(self.remove_initial_byte_signs(end))
+        self.deadtime = float(self.remove_initial_byte_signs(deadtime))
         self.information = kwargs
+
+        for info in self.information:
+            self.information[info] = self.remove_initial_byte_signs(self.information[info])
 
     def __repr__(self):
         return f"From frame {self.start} to {self.end}, deadtime: {self.deadtime}, information: {self.information}"
@@ -28,8 +31,13 @@ class Condition:
         
         vals = [self.start, self.end, self.deadtime]
         for info in self.information:
-            vals.append(self.information[info])
+            if not isinstance(self.information[info], bytes):
+                vals.append(self.information[info])
+            else:
+                #print(self.information[info], "is byte, decoded:", self.information[info].decode())
+                vals.append(self.information[info].decode())
         vals = [str(a).encode("utf8") for a in vals]
+        #print(vals)
         return vals
     
     def descriptors(self):
@@ -37,6 +45,23 @@ class Condition:
         for key in self.information.keys():
             descs.append(key)
         return descs
+
+
+    def remove_initial_byte_signs(self, obj):
+        # This function is only necessary to remove multiple instance of b'' conversions of conditions
+        # which happened with earlier versions of the SpikeTool. This function may become unnecessary in 
+        # the future.
+
+        if isinstance(obj, bytes):
+            if str(obj.decode()).startswith("b'"):
+                return(str(obj.decode()[2:-1])) # Remove initial b' and trailing '
+            else:
+                return str(obj.decode())
+
+        else:
+            return obj
+
+
 
 #####################################################################
 #

@@ -29,6 +29,7 @@ class ConditionsDialog(tkSimpleDialog.Dialog):
             self.table["end"] = {"name": "end"}
 
             for i, cond in enumerate(conditions):
+                #print(conditions)
                 # Add start and end entries
                 self.table["start"][f"c{i+1}"] = int(float(cond.start))
                 self.table["end"][f"c{i+1}"] = int(float(cond.end))
@@ -36,7 +37,12 @@ class ConditionsDialog(tkSimpleDialog.Dialog):
                     # Add all other informations for this condition
                     if info not in self.table:
                         self.table[info] = {"name": info}
-                    self.table[info][f"c{i+1}"] = [cond.information[info]]
+                        
+                    # Decode byte strings if stored as bytes, show raw data otherwise
+                    if not isinstance(cond.information[info], bytes):
+                        self.table[info][f"c{i+1}"] = [cond.information[info]]
+                    else:
+                        self.table[info][f"c{i+1}"] = [cond.information[info].decode()]
 
         super().__init__(parent)
 
@@ -69,3 +75,4 @@ class ConditionsDialog(tkSimpleDialog.Dialog):
                     # We've had problems with misbehaving lists, so
                     # flatten the list and then store the only entry
                     self.information[c][key] = list(flatten(self.information[c][key]))[0]
+        print(self.information)
