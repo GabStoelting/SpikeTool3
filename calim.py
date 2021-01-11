@@ -51,13 +51,11 @@ class Condition:
         # This function is only necessary to remove multiple instance of b'' conversions of conditions
         # which happened with earlier versions of the SpikeTool. This function may become unnecessary in 
         # the future.
-
         if isinstance(obj, bytes):
-            if str(obj.decode()).startswith("b'"):
-                return(str(obj.decode()[2:-1])) # Remove initial b' and trailing '
-            else:
-                return str(obj.decode())
-
+            obj = str(obj.decode())
+            while obj.startswith("b'") or obj.startswith('b"'):
+                obj = obj[2:-1]
+            return obj
         else:
             return obj
 

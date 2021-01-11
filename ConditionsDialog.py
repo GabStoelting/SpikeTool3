@@ -23,7 +23,7 @@ class ConditionsDialog(tkSimpleDialog.Dialog):
                           "angiotensin": {"name": "angiotensin", "c1": 100},
                           "potassium": {"name": "potassium", "c1": 4}}
         else:
-            print("Load existing conditions!")
+            #print("Load existing conditions!")
             self.table = {}
             self.table["start"] = {"name": "start"}
             self.table["end"] = {"name": "end"}
@@ -37,7 +37,7 @@ class ConditionsDialog(tkSimpleDialog.Dialog):
                     # Add all other informations for this condition
                     if info not in self.table:
                         self.table[info] = {"name": info}
-                        
+
                     # Decode byte strings if stored as bytes, show raw data otherwise
                     if not isinstance(cond.information[info], bytes):
                         self.table[info][f"c{i+1}"] = [cond.information[info]]
@@ -75,4 +75,4 @@ class ConditionsDialog(tkSimpleDialog.Dialog):
                     # We've had problems with misbehaving lists, so
                     # flatten the list and then store the only entry
                     self.information[c][key] = list(flatten(self.information[c][key]))[0]
-        print(self.information)
+        #print(self.information)
