@@ -146,7 +146,7 @@ class GraphFrame(ttk.Frame):
 
         # Setup the span selector
         rectprops = dict(facecolor='blue', alpha=0.5)
-        self.spansel = SpanSelector(self.raw_ax, self.controller.onselect, 'horizontal', rectprops=rectprops, useblit=True)
+        self.spansel = SpanSelector(self.raw_ax, self.controller.onselect, 'horizontal', rectprops=rectprops, useblit=True, button=[1])
         self.spansel.active = False
 
         # Connect the mouse button pressed and released events to the controller

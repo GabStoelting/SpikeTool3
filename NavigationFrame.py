@@ -10,7 +10,7 @@ class NavigationFrame(ttk.Frame):
 
         # This is for the foreground/background work around
         style = ttk.Style()
-        style.map("Treeview",
+        style.map("Treeview", "foreground",
                   foreground=self.fixed_map("foreground"),
                   background=self.fixed_map("background"))
 

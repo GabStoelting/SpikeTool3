@@ -145,9 +145,15 @@ class Cell:
             if kwargs.items() <= condition.information.items():
                 return self.get_event(range(int(condition.start), int(condition.end)))
 
-    def has_events(self):
-        if len(self.events) > 0:
+    def has_events(self, start=0, end=0):
+        if start == 0 and end == 0 and len(self.events) > 0:
             return True
+        elif len(self.events) > 0:
+            event_list = np.array([e.frame for e in self.events])
+            if len(event_list[(event_list >=start) & (event_list < end)]) > 0:
+                return True
+            else:
+                False
         else:
             return False
 

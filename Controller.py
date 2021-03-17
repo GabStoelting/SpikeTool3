@@ -39,6 +39,8 @@ class Controller:
         self.select_to = None
         self.select_lines = []
 
+        self.last_threshold = 1000.0
+
     def run(self):
         self.root.title("Spike Tool")
         self.root.deiconify()
@@ -202,7 +204,7 @@ class Controller:
         if not self.pickle:
             return
 
-        d = FindEvents(parent=self.root, select_from=self.select_from, select_to=self.select_to)
+        d = FindEvents(parent=self.root, select_from=self.select_from, select_to=self.select_to, last_threshold=self.last_threshold)
 
         # See if d.threshold exists
         try:
@@ -214,8 +216,10 @@ class Controller:
         if d.threshold <= 0.0:
             return
 
+        self.last_threshold = d.threshold
+        
         # Check and ask if the cell already has events assigned
-        if self.selected_cell.has_events():
+        if self.selected_cell.has_events(self.select_from, self.select_to):
             msg_box = tk.messagebox.askyesno("Overwrite Events?", "This cell may already contain events within the \
                                             chosen range. Do you want to replace the potentially existing events?")
             if msg_box:
