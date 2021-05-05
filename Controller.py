@@ -318,11 +318,17 @@ class Controller:
             for cell in self.pickle.recordings[rec].cells:
                 if self.pickle.recordings[rec].cells[cell].use:
                     if self.pickle.recordings[rec].cells[cell].has_events():
-                        self.view.navigation_frame.tree.insert(rec, "end", text=cell, tags=("active_cell_has_events",))
+                        self.view.navigation_frame.tree.insert(rec, "end", rec+"/"+cell, text=cell, tags=("active_cell_has_events",))
                     else:
-                        self.view.navigation_frame.tree.insert(rec, "end", text=cell, tags=("active_cell",))
+                        self.view.navigation_frame.tree.insert(rec, "end", rec+"/"+cell, text=cell, tags=("active_cell",))
                 else:
-                    self.view.navigation_frame.tree.insert(rec, "end", text=cell, tags=("inactive_cell",))
+                    self.view.navigation_frame.tree.insert(rec, "end", rec+"/"+cell, text=cell, tags=("inactive_cell",))
+    
+    def tree_update(self, tag):
+        current_selection = self.view.navigation_frame.tree.selection()[0]
+        #current_index = self.view.navigation_frame.tree.index(current_selection)
+
+        self.view.navigation_frame.tree.item(current_selection, tags=(tag, ))
 
     def event_context_clicked(self, event):
         # Show the context menu in the event list when clicked
@@ -621,14 +627,18 @@ class Controller:
             return
 
     def inactivate_cell(self):
+        print("inactivate_cell")
         if self.selected_cell is not None:
             self.selected_cell.reject()
-            self.tree_redraw()
+            self.tree_update("inactive_cell")
 
     def activate_cell(self):
         if self.selected_cell is not None:
             self.selected_cell.accept()
-            self.tree_redraw()
+            if self.selected_cell.has_events():
+                self.tree_update("active_cell_has_events")
+            else:
+                self.tree_update("active_cell")
 
     def activate_event(self):
         if self.selected_events is not None:
