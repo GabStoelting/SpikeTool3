@@ -1,6 +1,7 @@
 import tkinter as tk
 import tkinter.ttk as ttk
 
+
 class EventFrame(ttk.Frame):
     def __init__(self):
         # This is the frame for the event list
@@ -21,7 +22,6 @@ class EventFrame(ttk.Frame):
         event_scrollbar.grid(row=1, column=1, sticky="nswe")
         self.event_listbox.config(yscrollcommand=event_scrollbar.set)
         event_scrollbar.config(command=self.event_listbox.yview)
-
         self.menu = tk.Menu(self)
 
     def create_menu(self, controller):
@@ -32,4 +32,3 @@ class EventFrame(ttk.Frame):
 
     def event_menu_state(self, state="disabled"):
         self.filemenu.entryconfig("Add Single Event", state=state)
-

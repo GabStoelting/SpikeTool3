@@ -153,6 +153,7 @@ class GraphFrame(ttk.Frame):
         #self.canvas.mpl_connect('button_press_event', self.controller.graph_mouse_pressed)
         self.canvas.mpl_connect('button_release_event', self.controller.graph_mouse_released)
 
+
     def synchronize_axes(self, sync=True):
         if sync:
             self.raw_ax.get_shared_x_axes().join(self.raw_ax, self.di_ax)

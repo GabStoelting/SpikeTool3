@@ -19,6 +19,7 @@ class View:
 
         self.event_frame = EventFrame()
         self.event_frame.grid(row=0, column=1, sticky="nswe", padx=5)
+        self.event_frame.bind("<Control-f>", lambda x: print("X:",x))
 
         self.graph_frame = GraphFrame(controller=self.controller)
         self.graph_frame.grid(row=0, column=2, sticky="nswe", padx=5, pady=5)
@@ -30,4 +31,3 @@ class View:
         self.parent.rowconfigure(0, weight=1)
         self.parent.columnconfigure(1, weight=10)
         self.parent.columnconfigure(2, weight=80)
-

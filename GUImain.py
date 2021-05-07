@@ -4,11 +4,11 @@ from tkinter import font
 
 matplotlib.use("TkAgg")
 
-version = "20201207-GS"
+version = "20210505-GS"
 
 app = Controller()
 
-scale = False # Set this to true if you want to scale the fonts
+scale = False  # Set this to true if you want to scale the fonts
 
 if scale:
     default_font = font.nametofont("TkDefaultFont")

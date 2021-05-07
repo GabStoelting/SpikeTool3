@@ -49,9 +49,14 @@ class NavigationFrame(ttk.Frame):
                                                     command=controller.activate_cell)
         self.menu.add_command(label="Inactivate Cell",
                                                     command=controller.inactivate_cell)
+        self.menu.add_separator()
+        self.menu.add_command(label="Remove Recording",
+                                                    command=controller.remove_recording)
 
     def navigation_menu_state(self, state="disabled"):
         self.menu.entryconfig("Edit Recording Information", state=state)
+        self.menu.entryconfig("Remove Recording", state=state)
+
 
     # This function is a necessary workaround to get foreground and background colors
     # in the TreeView

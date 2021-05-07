@@ -108,7 +108,7 @@ class Controller:
             self.pickle.from_hdf(filename)
         else:
             return False
-        
+                   
         self.root.title(f"Spike Tool {filename}")    
 
         self.view.menu.recording_menu_state(state="normal")  # Activate menus
@@ -117,11 +117,9 @@ class Controller:
     def save_file(self):
         # Ask for a filename for the pickle to be saved at
         filename = tk.filedialog.asksaveasfilename(defaultextension=".hdf", filetypes=(("HDF5 File", "*.hdf"), ("Python Pickle", "*.pkl"), ("All Files", "*.*")),
-                                                   title="Choose a file.")
-        
+                                                   title="Choose a file.")        
         if not filename:
             return False
-
         
         if filename.lower().endswith(".pkl"):
             pickle.dump(self.pickle, open(filename, "wb"))
@@ -131,6 +129,8 @@ class Controller:
             filename = filename+".hdf"
             self.pickle.to_hdf(filename)
         
+        self.root.title(f"Spike Tool {filename}")    
+
 
     def show_recording_information(self):
         # This opens the recording information table
@@ -245,9 +245,7 @@ class Controller:
             return
 
         d = SubtractBaselineDialog(parent=self.root)
-        print(d.lam, d.p, d.iter)
         self.selected_cell.subtract_baseline(d.lam, d.p, d.iter)
-        print(self.selected_cell.baseline)
 
     def delete_event_list(self):
         # Search for events by thresholding of the approximated first derivative of the raw trace
@@ -345,12 +343,6 @@ class Controller:
         self.view.graph_frame.raw_ax.clear()
         self.view.graph_frame.raw_ax.plot(range(0, len(self.selected_cell.raw_data)), self.selected_cell.raw_data)
 
-        """# Todo: Add a way to switch between not showing baseline, showing baseline and showing data with baseline subtracted
-        try:
-            if len(self.selected_cell.baseline) > 0:
-                self.view.graph_frame.raw_ax.plot(range(0, len(self.selected_cell.raw_data)), self.selected_cell.baseline)
-        except AttributeError:
-            self.selected_cell.baseline = []"""
         self.view.graph_frame.di_ax.clear()
         self.view.graph_frame.di_ax.plot(range(1, len(self.selected_cell.raw_data)), self.selected_cell.get_di())
 
@@ -477,38 +469,21 @@ class Controller:
 
         self.view.graph_frame.canvas.draw()
 
-#def view_baseline_update(self, baseline_i, color, lw=0.2):
-        # This function only changes a subset of the baseline lines
-        #[self.baseline_lines[i].set_color(color) for i in baseline_i]
-        #[self.baseline_lines[i].set_linewidth(lw) for i in baseline_i]
-
-        #self.view.graph_frame.canvas.draw()
-
     def view_event_reset(self, event_i):
-        if event_i[-1] < len(self.selected_cell.events): #only reset view  selected of events that actually exist in the event list of the selected cell
-            for i in event_i:
-                event = self.selected_cell.events[i]
-                if event.use:
-                    self.event_lines_raw[i].set_color("green")
-                    self.event_lines_di[i].set_color("green")
-                    self.event_lines_raw[i].set_linewidth(0.5)
-                    self.event_lines_di[i].set_linewidth(0.5)
-                else:
-                    self.event_lines_raw[i].set_color("gray")
-                    self.event_lines_di[i].set_color("gray")
-                    self.event_lines_raw[i].set_linewidth(0.2)
-                    self.event_lines_di[i].set_linewidth(0.2)
-
-    """def view_baseline_reset(self, baseline_i):
-        for i in baseline_i:
-            baseline = self.selected_cell.baseline[i]
-            if baseline.use:
-
-                self.baseline_lines[i].set_color("purple")
-                self.baseline_lines[i].set_linewidth(0.5)
-            else:
-                self.baseline_lines[i].set_color("gray")
-                self.baseline_lines[i].set_linewidth(0.2)"""
+        if len(event_i) > 0:
+            if event_i[-1] < len(self.selected_cell.events): #only reset view  selected of events that actually exist in the event list of the selected cell
+                for i in event_i:
+                    event = self.selected_cell.events[i]
+                    if event.use:
+                        self.event_lines_raw[i].set_color("green")
+                        self.event_lines_di[i].set_color("green")
+                        self.event_lines_raw[i].set_linewidth(0.5)
+                        self.event_lines_di[i].set_linewidth(0.5)
+                    else:
+                        self.event_lines_raw[i].set_color("gray")
+                        self.event_lines_di[i].set_color("gray")
+                        self.event_lines_raw[i].set_linewidth(0.2)
+                        self.event_lines_di[i].set_linewidth(0.2)
 
     def event_list_rebuild(self):
         self.view.event_frame.event_listbox.delete(0, "end")
@@ -627,7 +602,6 @@ class Controller:
             return
 
     def inactivate_cell(self):
-        print("inactivate_cell")
         if self.selected_cell is not None:
             self.selected_cell.reject()
             self.tree_update("inactive_cell")
@@ -665,6 +639,12 @@ class Controller:
             tk.messagebox.showerror("Activation: No Baseline frames selected.", "You need to select baseline frames first!")
             return
 
+    def remove_recording(self):
+        MsgBox = tk.messagebox.askyesno("Remove Recording from File?", "Do you really want to remove this \
+            recording from the file? All events, informations and conditions will be lost!")
+        if MsgBox:
+            self.pickle.remove(self.selected_recording)
+        self.tree_redraw()
 
 
     def graph_mouse_released(self, event):
