@@ -575,16 +575,18 @@ class Project:
                                         cutoff=cutoff, **info)
                     
                     # Read and append the cell conditions
-                    if "conditions" in f[f"{rec_name}/cells"]:
-                        cond_cols = f[f"{rec_name}/cells/conditions/{c}"].attrs["columns"]
-                        cond_vals = np.array(
-                            f.get(f"{rec_name}/cells/conditions/{c}/{c}")) #.astype(float)
-                        for cv in cond_vals:
-                            cond= {}
-                            for i, col in enumerate(cond_cols):
-                                cond[col] = cv[i]
-                            rec.cells[c].add_condition(**cond)
-                    
+                    try:
+                        if "conditions" in f[f"{rec_name}/cells"]:
+                            cond_cols = f[f"{rec_name}/cells/conditions/{c}"].attrs["columns"]
+                            cond_vals = np.array(
+                                f.get(f"{rec_name}/cells/conditions/{c}/{c}")) #.astype(float)
+                            for cv in cond_vals:
+                                cond= {}
+                                for i, col in enumerate(cond_cols):
+                                    cond[col] = cv[i]
+                                rec.cells[c].add_condition(**cond)
+                    except ValueError:
+                        print(f"ValueError while loading conditions for {rec_name}, {c}")
                     # Read and append events       
                     if "events" in f[f"{rec_name}/cells"]:
                         if c in f[f"{rec_name}/cells/events"]:  

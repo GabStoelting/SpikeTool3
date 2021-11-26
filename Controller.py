@@ -563,9 +563,15 @@ class Controller:
         if self.select_from == self.select_to:
             self.selected_cell.reset_events(self.select_from, self.select_to)
             self.selected_cell.add_events(self.select_from)
-
             self.event_list_rebuild()
             self.view_refresh()
+        else:
+            self.selected_cell.reset_events(self.select_from, self.select_to)
+            self.selected_cell.add_events([self.select_from, self.select_to])
+            self.event_list_rebuild()
+            self.view_refresh()
+
+
 
     def add_baseline_list(self):        
         self.selected_cell.reset_baseline(self.select_from, self.select_to)

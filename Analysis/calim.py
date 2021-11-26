@@ -21,10 +21,12 @@ class Condition:
         self.information = kwargs
 
         for info in self.information:
-            self.information[info] = self.remove_initial_byte_signs(self.information[info])
+            self.information[info] = \
+                self.remove_initial_byte_signs(self.information[info])
 
     def __repr__(self):
-        return f"From frame {self.start} to {self.end}, deadtime: {self.deadtime}, information: {self.information}"
+        return f"From frame {self.start} to {self.end}, \
+            deadtime: {self.deadtime}, information: {self.information}"
     
     def values(self):
         # return the values of this condition as a list
@@ -34,10 +36,8 @@ class Condition:
             if not isinstance(self.information[info], bytes):
                 vals.append(self.information[info])
             else:
-                #print(self.information[info], "is byte, decoded:", self.information[info].decode())
                 vals.append(self.information[info].decode())
         vals = [str(a).encode("utf8") for a in vals]
-        #print(vals)
         return vals
     
     def descriptors(self):
@@ -46,11 +46,10 @@ class Condition:
             descs.append(key)
         return descs
 
-
     def remove_initial_byte_signs(self, obj):
-        # This function is only necessary to remove multiple instance of b'' conversions of conditions
-        # which happened with earlier versions of the SpikeTool. This function may become unnecessary in 
-        # the future.
+        # This function is only necessary to remove multiple instance of b'' 
+        # conversions of conditions which happened with earlier versions of
+        # the SpikeTool. This function may become unnecessary in the future.
         if isinstance(obj, bytes):
             obj = str(obj.decode())
             while obj.startswith("b'") or obj.startswith('b"'):
@@ -58,8 +57,6 @@ class Condition:
             return obj
         else:
             return obj
-
-
 
 #####################################################################
 #
@@ -84,9 +81,11 @@ class Event:
     def __repr__(self):
         return f"frame: {self.frame}, use:{self.use}"
 
+
 #####################################################################
 #
 #####################################################################
+
 
 class Baseline:
     # This class contains information about a single baseline frame
@@ -106,9 +105,11 @@ class Baseline:
     def __repr__(self):
         return f"frame: {self.frame}, use:{self.use}"
 
+
 #####################################################################
 #
 #####################################################################
+
 
 class Cell:
     # This class contains information about a single cell
@@ -126,7 +127,8 @@ class Cell:
         self.information = kwargs
 
     def __repr__(self):
-        return f"cell_id: {self.cell_id}, len: {len(self)} frames, number of events:{len(self.events)}"
+        return f"cell_id: {self.cell_id}, len: {len(self)} \
+            frames, number of events:{len(self.events)}"
 
     def __len__(self):
         return len(self.raw_data)
@@ -143,14 +145,15 @@ class Cell:
     def get_condition_events(self, **kwargs):
         for condition in self.conditions:
             if kwargs.items() <= condition.information.items():
-                return self.get_event(range(int(condition.start), int(condition.end)))
+                return self.get_event(range(int(condition.start), 
+                                            int(condition.end)))
 
     def has_events(self, start=0, end=0):
         if start == 0 and end == 0 and len(self.events) > 0:
             return True
         elif len(self.events) > 0:
             event_list = np.array([e.frame for e in self.events])
-            if len(event_list[(event_list >=start) & (event_list < end)]) > 0:
+            if len(event_list[(event_list >= start) & (event_list < end)]) > 0:
                 return True
             else:
                 False
@@ -164,30 +167,33 @@ class Cell:
             return False
 
     def reset_events(self, start=None, end=None):
-        if not start and not end:  # Reset all events if start and end are not specified
+        # Reset all events if start and end are not specified
+        if not start and not end:  
             self.events = []
             return
-        # If end is not specified but start is, set it from start to the end of the recording
+        # If end is not specified but start is, set it from 
+        # start to the end of the recording
         elif start and not end:
             end = len(self.raw_data)
         elif not start and end:  # This should not happen!
             return
 
-        self.events = [x for x in self.events if ((x.frame < start) or (x.frame > end))]
+        self.events = [x for x in self.events if ((x.frame < start) 
+            or (x.frame > end))]
         
     def reset_baseline(self, start=None, end=None):
-        if not start and not end:  # Reset all baseline frames if start and end are not specified
+        # Reset all baseline frames if start and end are not specified
+        if not start and not end:  
             self.baseline = []
             return
-        # If end is not specified but start is, set it from start to the end of the recording
+        # If end is not specified but start is, set it from 
+        # start to the end of the recording
         elif start and not end:
             end = len(self.raw_data)
-        #elif not start and end:  # This should not happen!
-            #return
 
-        self.baseline = [x for x in self.baseline if ((x.frame < start) or (x.frame > end))]
+        self.baseline = [x for x in self.baseline if ((x.frame < start) 
+                            or (x.frame > end))]
   
-
     def set_events(self, event_list):
         # Define the list of events for this cell
         if isinstance(event_list, int):
@@ -196,19 +202,21 @@ class Cell:
 
     def add_events(self, event_list):
         # Add events to the list of events for this cell
-
+        print("event_list: ", event_list)
         if isinstance(event_list, int):
             event_list = [event_list]
         self.events = self.events + [Event(event) for event in event_list]
         self.events = sorted(self.events, key=lambda event: event.frame)
 
     def add_baseline(self, baseline_list):
-		# Add baseline frames to the list of baseline for this cell
+        # Add baseline frames to the list of baseline for this cell
 
         if isinstance(baseline_list, int):
             baseline_list = [baseline_list]
-        self.baseline = self.baseline + [Baseline(baseline_frame) for baseline_frame in baseline_list]
-        self.baseline = sorted(self.baseline, key=lambda baseline_frame: baseline_frame.frame)
+        self.baseline = self.baseline + [Baseline(baseline_frame) for 
+                                       baseline_frame in baseline_list]
+        self.baseline = sorted(self.baseline, 
+                    key=lambda baseline_frame: baseline_frame.frame)
 
     def get_event(self, frame, only_active=True):
         # Get a list of events from this cell
@@ -217,7 +225,7 @@ class Cell:
         for event in self.events:
             if event.frame in frame:
                 if only_active:
-                    if event.use is True:
+                    if int(event.use) == 1:
                         yield event
                 else:
                     yield event
@@ -487,7 +495,10 @@ class Project:
     def append(self, recording: Recording):
         self.recordings[recording.file_id] = recording
         # self.recordings.append(recording)
-        
+    
+    def remove(self, rec_name):
+        self.recordings.pop(rec_name)
+
     def to_hdf(self, filename):
         # Save to HDF      
         f = h5py.File(filename, "w")
@@ -564,16 +575,18 @@ class Project:
                                         cutoff=cutoff, **info)
                     
                     # Read and append the cell conditions
-                    if "conditions" in f[f"{rec_name}/cells"]:
-                        cond_cols = f[f"{rec_name}/cells/conditions/{c}"].attrs["columns"]
-                        cond_vals = np.array(
-                            f.get(f"{rec_name}/cells/conditions/{c}/{c}")) #.astype(float)
-                        for cv in cond_vals:
-                            cond= {}
-                            for i, col in enumerate(cond_cols):
-                                cond[col] = cv[i]
-                            rec.cells[c].add_condition(**cond)
-                    
+                    try:
+                        if "conditions" in f[f"{rec_name}/cells"]:
+                            cond_cols = f[f"{rec_name}/cells/conditions/{c}"].attrs["columns"]
+                            cond_vals = np.array(
+                                f.get(f"{rec_name}/cells/conditions/{c}/{c}")) #.astype(float)
+                            for cv in cond_vals:
+                                cond= {}
+                                for i, col in enumerate(cond_cols):
+                                    cond[col] = cv[i]
+                                rec.cells[c].add_condition(**cond)
+                    except ValueError:
+                        print(f"ValueError while loading conditions for {rec_name}, {c}")
                     # Read and append events       
                     if "events" in f[f"{rec_name}/cells"]:
                         if c in f[f"{rec_name}/cells/events"]:  

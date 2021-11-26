@@ -8,7 +8,7 @@ version = "20210505-GS"
 
 app = Controller()
 
-scale = False  # Set this to true if you want to scale the fonts
+scale = False  # Set this to true if you want to scale the fonts for 4K monitors
 
 if scale:
     default_font = font.nametofont("TkDefaultFont")
