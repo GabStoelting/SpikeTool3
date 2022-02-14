@@ -33,7 +33,7 @@
     </li>
     <li><a href="#usage">Usage</a></li>
     <li><a href="#roadmap">Roadmap</a></li>
-    <li><a herf="#citations">Citations</a></li>
+    <li><a href="#citations">Citations</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
   </ol>
@@ -65,7 +65,7 @@ Please follow these steps:
 
 1. Clone the repository using command line tools (below) or by using a GUI version of Git
    ```sh
-   git clone https://github.com/your_username_/Project-Name.git
+   git clone https://github.com/GabStoelting/SpikeTool3
    ```
 2. Install the required libraries via conda
    ```sh
