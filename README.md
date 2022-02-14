@@ -1,8 +1,3 @@
-# SpikeTool3
-#
-# README template based on https://github.com/othneildrew/Best-README-Template/blob/master/README.md 
-
-
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
@@ -28,9 +23,6 @@
   <ol>
     <li>
       <a href="#about-the-project">About The Project</a>
-      <ul>
-        <li><a href="#built-with">Built With</a></li>
-      </ul>
     </li>
     <li>
       <a href="#getting-started">Getting Started</a>
@@ -41,6 +33,7 @@
     </li>
     <li><a href="#usage">Usage</a></li>
     <li><a href="#roadmap">Roadmap</a></li>
+    <li><a herf="#citations">Citations</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
   </ol>
@@ -53,27 +46,8 @@
 
 This project was started to allow for the curation of calcium imaging recordings using intensiometric and ratiometric dyes. It extended to allow for the selection of calcium spikes and 
 the definition of perfusion conditions.
-
+Versions of this software have been used in:
 <p align="right">(<a href="#top">back to top</a>)</p>
-
-
-
-### Built With
-
-This section should list any major frameworks/libraries used to bootstrap your project. Leave any add-ons/plugins for the acknowledgements section. Here are a few examples.
-
-* [Next.js](https://nextjs.org/)
-* [React.js](https://reactjs.org/)
-* [Vue.js](https://vuejs.org/)
-* [Angular](https://angular.io/)
-* [Svelte](https://svelte.dev/)
-* [Laravel](https://laravel.com)
-* [Bootstrap](https://getbootstrap.com)
-* [JQuery](https://jquery.com)
-
-<p align="right">(<a href="#top">back to top</a>)</p>
-
-
 
 <!-- GETTING STARTED -->
 ## Getting Started
@@ -83,11 +57,7 @@ for the examples below, I'll assume that you are able to use the conda package m
 
 ### Prerequisites
 
-This is an example of how to list things you need to use the software and how to install them.
-* npm
-  ```sh
-  npm install npm@latest -g
-  ```
+This tool requires python>3.6, numpy, pandas, h5py, matplotlib and tkintertable libraries. 
 
 ### Installation
 
@@ -137,6 +107,18 @@ or, if running on Windows, by editing the SpikeTool.bat to reflect the paths set
 See the [open issues](https://github.com/GabStoelting/SpikeTool3/issues) for a full list of proposed features (and known issues).
 
 <p align="right">(<a href="#top">back to top</a>)</p>
+
+<!-- CITATIONS -->
+## Citations
+
+This tool has been used in the following publications:
+<a href="https://www.pnas.org/content/118/17/e2014876118">
+1.Seidel, E. et al. Enhanced Ca2+ signaling, mild primary aldosteronism, and hypertension in a familial hyperaldosteronism mouse model (Cacna1hM1560V/+). PNAS 118, (2021).
+</a>
+<a href="https://www.nature.com/articles/s41467-019-13033-4">
+2.Schewe, J. et al. Elevated aldosterone and blood pressure in a mouse model of familial hyperaldosteronism with ClC-2 mutation. Nature Communications 10, 5155 (2019).
+</a>
+
 
 
 <!-- LICENSE -->
