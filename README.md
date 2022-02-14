@@ -112,13 +112,18 @@ See the [open issues](https://github.com/GabStoelting/SpikeTool3/issues) for a f
 ## Citations
 
 This tool has been used in the following publications:
-<a href="https://www.pnas.org/content/118/17/e2014876118">
-1.Seidel, E. et al. Enhanced Ca2+ signaling, mild primary aldosteronism, and hypertension in a familial hyperaldosteronism mouse model (Cacna1hM1560V/+). PNAS 118, (2021).
-</a>
-<a href="https://www.nature.com/articles/s41467-019-13033-4">
-2.Schewe, J. et al. Elevated aldosterone and blood pressure in a mouse model of familial hyperaldosteronism with ClC-2 mutation. Nature Communications 10, 5155 (2019).
-</a>
-
+<ol>
+  <li>
+    <a href="https://www.pnas.org/content/118/17/e2014876118">
+      Seidel, E. et al. Enhanced Ca2+ signaling, mild primary aldosteronism, and hypertension in a familial hyperaldosteronism mouse model (Cacna1hM1560V/+). PNAS 118, (2021).
+    </a>
+  </li>
+  <li>
+    <a href="https://www.nature.com/articles/s41467-019-13033-4">
+      Schewe, J. et al. Elevated aldosterone and blood pressure in a mouse model of familial hyperaldosteronism with ClC-2 mutation. Nature Communications 10, 5155 (2019).
+    </a>
+  </li>
+</ol>
 
 
 <!-- LICENSE -->
