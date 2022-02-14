@@ -52,8 +52,7 @@ Versions of this software have been used in:
 <!-- GETTING STARTED -->
 ## Getting Started
 
-This tool is written in python and will likely work with any version of python > 3.6. I recommend using Anaconda or Miniconda but this is no hard requirement. However,
-for the examples below, I'll assume that you are able to use the conda package manager.
+This tool is written in python and will likely work with any version of python > 3.6. I recommend using <a href="https://www.anaconda.com/products/individual">Anaconda</a> or <a href="https://docs.conda.io/en/latest/miniconda.html">Miniconda</a> but this is no hard requirement. However, for the installation instructions below, I'll assume that you are able to use the conda package manager.
 
 ### Prerequisites
 
