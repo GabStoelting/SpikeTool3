@@ -21,6 +21,7 @@ class MainMenu(tk.Menu):
         self.filemenu.add_command(label="New Pickle...", command=parent.new_file)
         self.filemenu.add_command(label="Open Project...", command=parent.open_file)
         self.filemenu.add_command(label="Save Project...", command=parent.save_file)
+        self.filemenu.add_command(label="Append Project...", command=parent.append_file)
         self.filemenu.add_separator()
         self.filemenu.add_command(label="Add .csv File", command=parent.add_csv)
         self.filemenu.add_separator()

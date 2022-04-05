@@ -131,7 +131,25 @@ class Controller:
         
         self.root.title(f"Spike Tool {filename}")    
 
+    def append_file(self):
+        filename = tk.filedialog.askopenfilename(filetypes=(("HDF5 File", "*.hdf"), ("Python Pickle", "*.pkl"), ("All Files", "*.*")),
+                                                 title="Choose a file.")
+        if not filename:
+            return False
+       
+        if filename.lower().endswith(".pkl"):
+            project = pickle.load(open(filename, "rb"))
+        elif filename.lower().endswith(".hdf"):
+            project = Project()
+            project.from_hdf(filename)
+        else:
+            return False
+        for recording in project.recordings:
+            self.pickle.append(project.recordings[recording])
 
+        self.view.menu.recording_menu_state(state="normal")  # Activate menus
+        self.tree_redraw()
+		
     def show_recording_information(self):
         # This opens the recording information table
         if not self.selected_recording:
