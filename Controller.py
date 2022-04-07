@@ -10,7 +10,7 @@ from RecordingInfoDialog import RecordingInfoDialog
 from ConditionsDialog import ConditionsDialog
 from PDFOverview import CreatePDF
 from SubtractBaselineDialog import SubtractBaselineDialog
-
+import platform
 
 class Controller:
     def __init__(self):
@@ -49,17 +49,25 @@ class Controller:
     # This function links buttons to functions
     def setup_events(self):
 
+        # Check if the operating system is "Darwin" (MacOS) to determine which
+        # mouse key to bind for right-click (Button-2 for MacOS; Button-3 for everything else)
+
+        if platform.system() == "Darwin":
+            right_click = "<Button-2>"
+        else:
+            right_click = "<Button-3>"
+
         # Bind events from the NavigationFrame to commands
         self.view.navigation_frame.tree.bind("<Button-1>", self.tree_clicked)
 
         # Bind event context menu to ListBox
-        self.view.event_frame.event_listbox.bind("<Button-3>", self.event_context_clicked)
+        self.view.event_frame.event_listbox.bind(right_click, self.event_context_clicked)
         
         # Bind baseline context menu to ListBox
-        self.view.baseline_frame.baseline_listbox.bind("<Button-3>", self.baseline_context_clicked)
+        self.view.baseline_frame.baseline_listbox.bind(right_click, self.baseline_context_clicked)
 
         # Bind event context menu to ListBox
-        self.view.navigation_frame.tree.bind("<Button-3>", self.tree_context_clicked)
+        self.view.navigation_frame.tree.bind(right_click, self.tree_context_clicked)
 
         # Bind the selection of one or more events
         self.view.event_frame.event_listbox.bind('<<ListboxSelect>>', self.event_list_select_event)

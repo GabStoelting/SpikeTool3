@@ -4,8 +4,7 @@ from tkinter import font
 
 matplotlib.use("TkAgg")
 
-version = "20210505-GS"
-
+version = "20220407-GS"
 app = Controller()
 
 scale = False  # Set this to true if you want to scale the fonts for 4K monitors
