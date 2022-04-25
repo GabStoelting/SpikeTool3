@@ -20,8 +20,7 @@ class Controller:
         self.selected_cell = None
         self.selected_recording = None
         self.view = View(parent=self.root, controller=self)
-        self.setup_events()
-        self.setup_menu()
+
         self.selected_events = None
         self.event_lines_raw = None
         self.event_lines_di = None
@@ -41,6 +40,15 @@ class Controller:
 
         self.last_threshold = 1000.0
 
+        # Check if the operating system is "Darwin" (MacOS) to determine which
+        # mouse key to bind for right-click (Button-2 for MacOS; Button-3 for everything else)
+        self.right_click = "<Button-3>"
+        if platform.system() == "Darwin":
+            self.right_click = "<Button-2>"
+
+        self.setup_events()
+        self.setup_menu()
+
     def run(self):
         self.root.title("Spike Tool")
         self.root.deiconify()
@@ -49,25 +57,17 @@ class Controller:
     # This function links buttons to functions
     def setup_events(self):
 
-        # Check if the operating system is "Darwin" (MacOS) to determine which
-        # mouse key to bind for right-click (Button-2 for MacOS; Button-3 for everything else)
-
-        if platform.system() == "Darwin":
-            right_click = "<Button-2>"
-        else:
-            right_click = "<Button-3>"
-
         # Bind events from the NavigationFrame to commands
         self.view.navigation_frame.tree.bind("<Button-1>", self.tree_clicked)
 
         # Bind event context menu to ListBox
-        self.view.event_frame.event_listbox.bind(right_click, self.event_context_clicked)
+        self.view.event_frame.event_listbox.bind(self.right_click, self.event_context_clicked)
         
         # Bind baseline context menu to ListBox
-        self.view.baseline_frame.baseline_listbox.bind(right_click, self.baseline_context_clicked)
+        self.view.baseline_frame.baseline_listbox.bind(self.right_click, self.baseline_context_clicked)
 
         # Bind event context menu to ListBox
-        self.view.navigation_frame.tree.bind(right_click, self.tree_context_clicked)
+        self.view.navigation_frame.tree.bind(self.right_click, self.tree_context_clicked)
 
         # Bind the selection of one or more events
         self.view.event_frame.event_listbox.bind('<<ListboxSelect>>', self.event_list_select_event)
@@ -128,14 +128,16 @@ class Controller:
                                                    title="Choose a file.")        
         if not filename:
             return False
-        
-        if filename.lower().endswith(".pkl"):
-            pickle.dump(self.pickle, open(filename, "wb"))
-        elif filename.lower().endswith(".hdf"):
-            self.pickle.to_hdf(filename)
-        else:
-            filename = filename+".hdf"
-            self.pickle.to_hdf(filename)
+        try:
+            if filename.lower().endswith(".pkl"):
+                pickle.dump(self.pickle, open(filename, "wb"))
+            elif filename.lower().endswith(".hdf"):
+                self.pickle.to_hdf(filename)
+            else:
+                filename = filename+".hdf"
+                self.pickle.to_hdf(filename)
+        except:
+            tk.messagebox.showerror(title="Save error", message="Error during saving! Please retry!")
         
         self.root.title(f"Spike Tool {filename}")    
 
