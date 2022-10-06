@@ -101,7 +101,7 @@ or, if running on Windows, by editing the SpikeTool.bat to reflect the paths set
 
 - [ ] Make installation easier
 - [ ] Enhance spike-finding algorithm
-- [ ] Add ability to merge projects
+- [x] Add ability to merge projects
 
 See the [open issues](https://github.com/GabStoelting/SpikeTool3/issues) for a full list of proposed features (and known issues).
 

@@ -683,7 +683,7 @@ class Controller:
 
     def graph_mouse_released(self, event):
         # This function runs when the mouse button was released
-
+        print("Mouse button released")
         # If the right mouse button (button == 3) was released, show the context menu!
         if event.button == 3:
             # Get the coordinates
@@ -695,6 +695,7 @@ class Controller:
 
     def onselect(self, vmin, vmax):
         # This handles the input from the SpanSelector in GraphFrame
+        print("SpanSelector clicked", vmin, vmax)
         (self.select_from, self.select_to) = self.graph_set_from_to(int(vmin), int(vmax))
         self.graph_select_event()
         self.graph_select_baseline()

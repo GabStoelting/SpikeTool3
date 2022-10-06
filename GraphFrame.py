@@ -146,8 +146,11 @@ class GraphFrame(ttk.Frame):
 
         # Setup the span selector
         rectprops = dict(facecolor='blue', alpha=0.4)
+
+        # Create the SpanSelector object. The "minspan" parameter has to be set below 0.0 to make sure that you
+        # can always select a single frame with a click.
         self.spansel = SpanSelector(self.raw_ax, self.controller.onselect, 'horizontal', rectprops=rectprops,
-                                    useblit=True, button=[1], interactive=True, minspan=0)
+                                    useblit=True, button=[1], interactive=True, minspan=-1.0)
         self.spansel.active = False
 
         # Connect the mouse button pressed and released events to the controller
