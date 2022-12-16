@@ -58,7 +58,8 @@ class Controller:
     def setup_events(self):
 
         # Bind events from the NavigationFrame to commands
-        self.view.navigation_frame.tree.bind("<Button-1>", self.tree_clicked)
+        #self.view.navigation_frame.tree.bind("<Button-1>", self.tree_clicked)
+        self.view.navigation_frame.tree.bind("<<TreeviewSelect>>", self.tree_clicked)
 
         # Bind event context menu to ListBox
         self.view.event_frame.event_listbox.bind(self.right_click, self.event_context_clicked)
@@ -306,31 +307,28 @@ class Controller:
         # TODO: Change appearance of currently selected item
 
         # Handle selections of the TreeView
-        cell = self.view.navigation_frame.tree.identify('item', event.x, event.y)
-        rec = self.view.navigation_frame.tree.parent(cell)
-        cell = self.view.navigation_frame.tree.item(cell)["text"]
+        tree = event.widget
+        selection = tree.selection()[0].split("/")
+        print(selection, len(selection))
 
-        # Check if the selected entry is a cell or a recording
-        # if rec is set, a cell has been selected
-        if rec:
-            self.selected_recording = rec
-            self.selected_cell = self.pickle.recordings[self.selected_recording].cells[cell]
+        self.selected_recording = selection[0]
+
+        if len(selection) > 1:
+            self.selected_cell = self.pickle.recordings[self.selected_recording].cells[selection[1]]
+            # If a cell is selected, hide "Recording Information" from the context menu
             self.view.navigation_frame.navigation_menu_state(state="disabled")
+
+            # This should only be run if a cell was selected!
+            self.event_list_rebuild()
+            self.baseline_list_rebuild()
+            self.view_rebuild()
+            self.view_refresh()
         else:
-            self.selected_recording = cell
             self.selected_cell = None
             self.view.navigation_frame.navigation_menu_state(state="normal")
 
-            # TODO: Clear the graphs!
-            return
-
-        # This should only be run if a cell was selected!
-        self.event_list_rebuild()
-        self.baseline_list_rebuild()
-        self.view_rebuild()
-        self.view_refresh()
-
     def tree_context_clicked(self, event):
+        print("test")
         self.view.navigation_frame.menu.post(event.x_root, event.y_root)
 
     def tree_redraw(self):

@@ -230,6 +230,10 @@ class Cell:
                 else:
                     yield event
 
+    def get_event_list(self, only_active=True):
+        frame = [x.frame for x in self.events if x.use]
+        return frame
+
     def get_baseline(self, frame, only_active=True):
         # Get a list of baseline frames from this cell
         if isinstance(frame, int):

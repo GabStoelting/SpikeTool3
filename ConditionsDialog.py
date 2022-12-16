@@ -61,7 +61,6 @@ class ConditionsDialog(tkSimpleDialog.Dialog):
     # TODO: Add a "validate" function that performs some basic sanity checks!
 
     def apply(self):
-
         self.information = {col: {self.information_table.getModel().data[key]["name"]:
                                 self.information_table.getModel().data[key][col]
                             for key in self.information_table.getModel().data} for col in self.information_table.getModel().columnNames}
